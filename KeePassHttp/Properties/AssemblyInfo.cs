@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("KeePassHttp")]
 [assembly: AssemblyDescription("A plugin to expose a secure HTTP interface to your KeePass database")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Perry Nguyen, Lukas Schulze")]
+[assembly: AssemblyCompany("Alan Płócieniak, Perry Nguyen, Lukas Schulze")]
 [assembly: AssemblyProduct("KeePass Plugin")]
-[assembly: AssemblyCopyright("Copyright © Perry Nguyen, Lukas Schulze 2013")]
+[assembly: AssemblyCopyright("Copyright © Alan Płócieniak, Perry Nguyen, Lukas Schulze 2025")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
