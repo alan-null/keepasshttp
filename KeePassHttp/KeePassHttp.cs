@@ -60,7 +60,7 @@ namespace KeePassHttp
         {
             var p = new SearchParameters();
             p.SearchInTitles = true;
-            p.RegularExpression = true;
+            p.SearchMode = PwSearchMode.Regular;
             p.SearchInGroupNames = false;
             p.SearchInNotes = false;
             p.SearchInOther = false;
