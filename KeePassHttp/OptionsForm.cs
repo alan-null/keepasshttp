@@ -1,12 +1,7 @@
 ﻿using KeePassLib;
-using KeePassHttp;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using KeePassLib.Collections;
 
@@ -22,7 +17,6 @@ namespace KeePassHttp
             _config = config;
             InitializeComponent();
         }
-
 
         private PwEntry GetConfigEntry(PwDatabase db)
         {
@@ -112,8 +106,8 @@ namespace KeePassHttp
                         entry.Touch(true);
                         KeePass.Program.MainForm.UpdateUI(false, null, true, db.RootGroup, true, null, true);
                         MessageBox.Show(
-                            String.Format("Successfully removed {0} encryption-key{1} from KeePassHttp Settings.", deleteKeys.Count.ToString(), deleteKeys.Count == 1 ? "" : "s"),
-                            String.Format("Removed {0} key{1} from database", deleteKeys.Count.ToString(), deleteKeys.Count == 1 ? "" : "s"),
+                            string.Format("Successfully removed {0} encryption-key{1} from KeePassHttp Settings.", deleteKeys.Count.ToString(), deleteKeys.Count == 1 ? "" : "s"),
+                            string.Format("Removed {0} key{1} from database", deleteKeys.Count.ToString(), deleteKeys.Count == 1 ? "" : "s"),
                             MessageBoxButtons.OK,
                             MessageBoxIcon.Information
                         );
@@ -150,8 +144,8 @@ namespace KeePassHttp
                 if (entries.Count() > 999)
                 {
                     MessageBox.Show(
-                        String.Format("{0} entries detected!\nSearching and removing permissions could take some while.\n\nWe will inform you when the process has been finished.", entries.Count().ToString()),
-                        String.Format("{0} entries detected", entries.Count().ToString()),
+                        string.Format("{0} entries detected!\nSearching and removing permissions could take some while.\n\nWe will inform you when the process has been finished.", entries.Count().ToString()),
+                        string.Format("{0} entries detected", entries.Count().ToString()),
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Information
                     );
@@ -182,8 +176,8 @@ namespace KeePassHttp
                 {
                     KeePass.Program.MainForm.UpdateUI(false, null, true, db.RootGroup, true, null, true);
                     MessageBox.Show(
-                        String.Format("Successfully removed permissions from {0} entr{1}.", counter.ToString(), counter == 1 ? "y" : "ies"),
-                        String.Format("Removed permissions from {0} entr{1}", counter.ToString(), counter == 1 ? "y" : "ies"),
+                        string.Format("Successfully removed permissions from {0} entr{1}.", counter.ToString(), counter == 1 ? "y" : "ies"),
+                        string.Format("Removed permissions from {0} entr{1}", counter.ToString(), counter == 1 ? "y" : "ies"),
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Information
                     );

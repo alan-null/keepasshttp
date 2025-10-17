@@ -1,10 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 using KeePassLib;
@@ -47,11 +42,17 @@ namespace KeePassHttp
                 SetLabel();
                 foreach (var e in value)
                 {
-                    if (e == null || e.Strings == null ||
-                            e.Strings.Get(PwDefs.TitleField) == null) continue;
+                    if (e == null || e.Strings == null || e.Strings.Get(PwDefs.TitleField) == null)
+                    {
+                        continue;
+                    }
+
                     var title = e.Strings.Get(PwDefs.TitleField).ReadString();
                     if (Plugin == null || Plugin.GetUserPass(e) == null)
-                            continue;
+                    {
+                        continue;
+                    }
+
                     var username = Plugin.GetUserPass(e)[0];
 
                     EntriesBox.Items.Add(title + " - " + username);
@@ -71,8 +72,11 @@ namespace KeePassHttp
         private void SetLabel()
         {
             if (_Host == null)
+            {
                 return;
-            ConfirmTextLabel.Text = String.Format(
+            }
+
+            ConfirmTextLabel.Text = string.Format(
                 Message,
                 _Host,
                 Count == 1 ? "item" : "items",

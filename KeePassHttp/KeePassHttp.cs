@@ -1,24 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Net;
 using System.Windows.Forms;
-using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using System.Security.Cryptography;
 
 using KeePass.Plugins;
 using KeePass.UI;
 using KeePassLib;
-using KeePassLib.Collections;
 using KeePassLib.Security;
 
 using Newtonsoft.Json;
 using KeePass.Util.Spr;
-using KeePassLib.Serialization;
-using System.Resources;
 
 namespace KeePassHttp
 {
@@ -58,17 +53,19 @@ namespace KeePassHttp
 
         private SearchParameters MakeSearchParameters()
         {
-            var p = new SearchParameters();
-            p.SearchInTitles = true;
-            p.SearchMode = PwSearchMode.Regular;
-            p.SearchInGroupNames = false;
-            p.SearchInNotes = false;
-            p.SearchInOther = false;
-            p.SearchInPasswords = false;
-            p.SearchInTags = false;
-            p.SearchInUrls = true;
-            p.SearchInUserNames = false;
-            p.SearchInUuids = false;
+            var p = new SearchParameters
+            {
+                SearchInTitles = true,
+                SearchMode = PwSearchMode.Regular,
+                SearchInGroupNames = false,
+                SearchInNotes = false,
+                SearchInOther = false,
+                SearchInPasswords = false,
+                SearchInTags = false,
+                SearchInUrls = true,
+                SearchInUserNames = false,
+                SearchInUuids = false
+            };
             return p;
         }
 
@@ -76,14 +73,18 @@ namespace KeePassHttp
         {
             byte[] bytes;
             if (base64in)
-                bytes = decode64(input);
+            {
+                bytes = Decode64(input);
+            }
             else
+            {
                 bytes = Encoding.UTF8.GetBytes(input);
+            }
 
-
-            using (var c = mode == CMode.ENCRYPT ? cipher.CreateEncryptor() : cipher.CreateDecryptor()) {
-            var buf = c.TransformFinalBlock(bytes, 0, bytes.Length);
-            return base64out ? encode64(buf) : Encoding.UTF8.GetString(buf);
+            using (var c = mode == CMode.ENCRYPT ? cipher.CreateEncryptor() : cipher.CreateDecryptor())
+            {
+                var buf = c.TransformFinalBlock(bytes, 0, bytes.Length);
+                return base64out ? Encode64(buf) : Encoding.UTF8.GetString(buf);
             }
         }
 
@@ -94,8 +95,10 @@ namespace KeePassHttp
             var entry = root.FindEntry(uuid, false);
             if (entry == null && create)
             {
-                entry = new PwEntry(false, true);
-                entry.Uuid = uuid;
+                entry = new PwEntry(false, true)
+                {
+                    Uuid = uuid
+                };
                 entry.Strings.Set(PwDefs.TitleField, new ProtectedString(false, KEEPASSHTTP_NAME));
                 root.AddEntry(entry, true);
                 UpdateUI(null);
@@ -114,7 +117,7 @@ namespace KeePassHttp
                 {
                     try
                     {
-                        time = Int32.Parse(s) * 1000;
+                        time = int.Parse(s) * 1000;
                     }
                     catch { }
                 }
@@ -139,7 +142,9 @@ namespace KeePassHttp
             {
                 var notify = host.MainWindow.MainNotifyIcon;
                 if (notify == null)
+                {
                     return;
+                }
 
                 EventHandler clicked = null;
                 EventHandler closed = null;
@@ -149,14 +154,18 @@ namespace KeePassHttp
                     notify.BalloonTipClicked -= clicked;
                     notify.BalloonTipClosed -= closed;
                     if (onclick != null)
+                    {
                         onclick(notify, null);
+                    }
                 };
                 closed = delegate
                 {
                     notify.BalloonTipClicked -= clicked;
                     notify.BalloonTipClosed -= closed;
                     if (onclose != null)
+                    {
                         onclose(notify, null);
+                    }
                 };
 
                 //notify.BalloonTipIcon = ToolTipIcon.Info;
@@ -168,9 +177,13 @@ namespace KeePassHttp
                 notify.BalloonTipClicked += clicked;
             };
             if (host.MainWindow.InvokeRequired)
+            {
                 host.MainWindow.Invoke(m);
+            }
             else
+            {
                 m.Invoke();
+            }
         }
 
         public override bool Initialize(IPluginHost host)
@@ -206,7 +219,9 @@ namespace KeePassHttp
 
                     httpThread = new Thread(new ThreadStart(Run));
                     httpThread.Start();
-                } catch (HttpListenerException e) {
+                }
+                catch (HttpListenerException e)
+                {
                     MessageBox.Show(host.MainWindow,
                         "Unable to start HttpListener!\nDo you really have only one installation of KeePassHttp in your KeePass-directory?\n\n" + e,
                         "Unable to start HttpListener",
@@ -243,7 +258,8 @@ namespace KeePassHttp
                     r.AsyncWaitHandle.Close();
                 }
                 catch (ThreadInterruptedException) { }
-                catch (HttpListenerException e) {
+                catch (HttpListenerException e)
+                {
                     MessageBox.Show(host.MainWindow, "Unable to process request!\n\n" + e,
                         "Unable to process request",
                         MessageBoxButtons.OK,
@@ -255,16 +271,18 @@ namespace KeePassHttp
 
         private JsonSerializer NewJsonSerializer()
         {
-            var settings = new JsonSerializerSettings();
-            settings.DefaultValueHandling = DefaultValueHandling.Ignore;
-            settings.NullValueHandling = NullValueHandling.Ignore;
+            var settings = new JsonSerializerSettings
+            {
+                DefaultValueHandling = DefaultValueHandling.Ignore,
+                NullValueHandling = NullValueHandling.Ignore
+            };
 
             return JsonSerializer.Create(settings);
         }
         private Response ProcessRequest(Request r, HttpListenerResponse resp)
         {
             string hash = host.Database.RootGroup.Uuid.ToHexString() + host.Database.RecycleBinUuid.ToHexString();
-            hash = getSHA1(hash);
+            hash = GetSHA1(hash);
 
             var response = new Response(r.RequestType, hash);
 
@@ -281,7 +299,7 @@ namespace KeePassHttp
                     }
                     catch (Exception e)
                     {
-                        ShowNotification("***BUG*** " + e, (s,evt) => MessageBox.Show(host.MainWindow, e + ""));
+                        ShowNotification("***BUG*** " + e, (s, evt) => MessageBox.Show(host.MainWindow, e + ""));
                         response.Error = e + "";
                         resp.StatusCode = (int)HttpStatusCode.BadRequest;
                     }
@@ -295,20 +313,27 @@ namespace KeePassHttp
 
             return response;
         }
-        private void RequestHandler(IAsyncResult r) 
+        private void RequestHandler(IAsyncResult r)
         {
-            try {
+            try
+            {
                 _RequestHandler(r);
-            } catch (Exception e) {
+            }
+            catch (Exception e)
+            {
                 MessageBox.Show(host.MainWindow, "RequestHandler failed: " + e);
             }
         }
         private void _RequestHandler(IAsyncResult r)
         {
-            if (stopped) return;
-            var l    = (HttpListener)r.AsyncState;
-            var ctx  = l.EndGetContext(r);
-            var req  = ctx.Request;
+            if (stopped)
+            {
+                return;
+            }
+
+            var l = (HttpListener)r.AsyncState;
+            var ctx = l.EndGetContext(r);
+            var req = ctx.Request;
             var resp = ctx.Response;
 
             var serializer = NewJsonSerializer();
@@ -356,7 +381,9 @@ namespace KeePassHttp
             {
                 Response response = null;
                 if (request != null)
+                {
                     response = ProcessRequest(request, resp);
+                }
 
                 resp.ContentType = "application/json";
                 var writer = new StringWriter();
@@ -389,14 +416,23 @@ namespace KeePassHttp
         private void UpdateUI(PwGroup group)
         {
             var win = host.MainWindow;
-            if (group == null) group = host.Database.RootGroup;
-            var f = (MethodInvoker) delegate {
+            if (group == null)
+            {
+                group = host.Database.RootGroup;
+            }
+
+            var f = (MethodInvoker)delegate
+            {
                 win.UpdateUI(false, null, true, group, true, null, true);
             };
             if (win.InvokeRequired)
+            {
                 win.Invoke(f);
+            }
             else
+            {
                 f.Invoke();
+            }
         }
 
         internal string[] GetUserPass(PwEntry entry)
@@ -407,7 +443,7 @@ namespace KeePassHttp
         internal string[] GetUserPass(PwEntryDatabase entryDatabase)
         {
             // follow references
-            SprContext ctx = new SprContext(entryDatabase.entry, entryDatabase.database,
+            SprContext ctx = new SprContext(entryDatabase.Entry, entryDatabase.Database,
                     SprCompileFlags.All, false, false);
 
             return GetUserPass(entryDatabase, ctx);
@@ -417,18 +453,22 @@ namespace KeePassHttp
         {
             // follow references
             string user = SprEngine.Compile(
-                    entryDatabase.entry.Strings.ReadSafe(PwDefs.UserNameField), ctx);
+                    entryDatabase.Entry.Strings.ReadSafe(PwDefs.UserNameField), ctx);
             string pass = SprEngine.Compile(
-                    entryDatabase.entry.Strings.ReadSafe(PwDefs.PasswordField), ctx);
+                    entryDatabase.Entry.Strings.ReadSafe(PwDefs.PasswordField), ctx);
             var f = (MethodInvoker)delegate
             {
                 // apparently, SprEngine.Compile might modify the database
                 host.MainWindow.UpdateUI(false, null, false, null, false, null, false);
             };
             if (host.MainWindow.InvokeRequired)
+            {
                 host.MainWindow.Invoke(f);
+            }
             else
+            {
                 f.Invoke();
+            }
 
             return new string[] { user, pass };
         }
@@ -438,7 +478,7 @@ namespace KeePassHttp
         /// </summary>
         /// <param name="input">Eingabestring</param>
         /// <returns>SHA1 Hash der Eingabestrings</returns>
-        private string getSHA1(string input)
+        private string GetSHA1(string input)
         {
             //Umwandlung des Eingastring in den SHA1 Hash
             System.Security.Cryptography.SHA1 sha1 = new System.Security.Cryptography.SHA1CryptoServiceProvider();

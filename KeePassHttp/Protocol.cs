@@ -10,23 +10,29 @@ namespace KeePassHttp
 {
     public sealed partial class KeePassHttpExt : Plugin
     {
-        private static string encode64(byte[] b)
+        private static string Encode64(byte[] b)
         {
             return System.Convert.ToBase64String(b);
         }
 
-        private static byte[] decode64(string s)
+        private static byte[] Decode64(string s)
         {
             return System.Convert.FromBase64String(s);
         }
+
         private bool VerifyRequest(Request r, Aes aes)
         {
             var entry = GetConfigEntry(false);
             if (entry == null)
+            {
                 return false;
+            }
+
             var s = entry.Strings.Get(ASSOCIATE_KEY_PREFIX + r.Id);
             if (s == null)
+            {
                 return false;
+            }
 
             return TestRequestVerifier(r, aes, s.ReadString());
         }
@@ -34,18 +40,20 @@ namespace KeePassHttp
         private bool TestRequestVerifier(Request r, Aes aes, string key)
         {
             var success = false;
-            var crypted = decode64(r.Verifier);
+            var crypted = Decode64(r.Verifier);
 
-            aes.Key = decode64(key);
-            aes.IV = decode64(r.Nonce);
+            aes.Key = Decode64(key);
+            aes.IV = Decode64(r.Nonce);
 
             using (var dec = aes.CreateDecryptor())
             {
-                try {
+                try
+                {
                     var buf = dec.TransformFinalBlock(crypted, 0, crypted.Length);
                     var value = Encoding.UTF8.GetString(buf);
                     success = value == r.Nonce;
-                } catch (CryptographicException) { } // implicit failure
+                }
+                catch (CryptographicException) { } // implicit failure
             }
             return success;
         }
@@ -53,7 +61,7 @@ namespace KeePassHttp
         private void SetResponseVerifier(Response r, Aes aes)
         {
             aes.GenerateIV();
-            r.Nonce = encode64(aes.IV);
+            r.Nonce = Encode64(aes.IV);
             r.Verifier = CryptoTransform(r.Nonce, false, true, aes, CMode.ENCRYPT);
         }
     }
@@ -130,9 +138,13 @@ namespace KeePassHttp
             RequestType = request;
 
             if (request == Request.GET_LOGINS || request == Request.GET_ALL_LOGINS || request == Request.GENERATE_PASSWORD)
+            {
                 Entries = new List<ResponseEntry>();
+            }
             else
+            {
                 Entries = null;
+            }
 
             Assembly assembly = Assembly.GetExecutingAssembly();
             FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
@@ -206,7 +218,7 @@ namespace KeePassHttp
     }
     public class ResponseStringField
     {
-        public ResponseStringField() {}
+        public ResponseStringField() { }
         public ResponseStringField(string key, string value)
         {
             Key = key;

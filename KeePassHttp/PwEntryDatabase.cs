@@ -4,18 +4,19 @@ namespace KeePassHttp
 {
     class PwEntryDatabase
     {
-        private PwEntry _entry;
-        public PwEntry entry
+        private readonly PwDatabase _database;
+        private readonly PwEntry _entry;
+
+        public PwEntry Entry
         {
             get { return _entry; }
         }
-        private PwDatabase _database;
-        public PwDatabase database
+
+        public PwDatabase Database
         {
             get { return _database; }
         }
 
-        //public PwEntryDatabase(ref PwEntry e, ref PwDatabase db)
         public PwEntryDatabase(PwEntry e, PwDatabase db)
         {
             _entry = e;
