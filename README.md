@@ -3,7 +3,7 @@
 is a plugin for KeePass 2.x and provides a secure means of exposing KeePass entries via HTTP for clients to
 consume.
 
-This plugin is primarily intended for use with [PassIFox for Mozilla Firefox](https://github.com/pfn/passifox/) and [chromeIPass for Google Chrome](https://chrome.google.com/webstore/detail/chromeipass/ompiailgknfdndiefoaoiligalphfdae?hl=en).
+This plugin is primarily intended for use with [chromeIPass for Google Chrome](https://github.com/alan-null/chromeIPass).
 
 ## Features
  * returns all matching entries for a given URL
@@ -29,7 +29,7 @@ This plugin is primarily intended for use with [PassIFox for Mozilla Firefox](ht
 
 ## Non-Windows / Manual Windows installation
 
- 1. Download [KeePassHttp](https://raw.github.com/pfn/keepasshttp/master/KeePassHttp.plgx)
+ 1. Download [KeePassHttp](https://github.com/alan-null/chromeIPass/releases)
  2. Copy it into the KeePass directory
 	* default directory in Ubuntu14.04: /usr/lib/keepass2/
 	* default directory in Arch: /usr/share/keepass
@@ -45,7 +45,7 @@ KeePass needs Mono. You can find detailed [installation instructions on the offi
 
 Perry has tested KeePassHttp with Mono 2.6.7 and it appears to work well.
 With Mono 2.6.7 and a version of KeePass lower than 2.20 he could not get the plgx file to work on linux.
-If the plgx file does also not work for you, you can try the two DLL files KeePassHttp.dll and Newtonsoft.Json.dll from directory [mono](https://github.com/pfn/keepasshttp/tree/master/mono) which should work for you.
+If the plgx file does also not work for you, you can try the two DLL files KeePassHttp.dll and Newtonsoft.Json.dll from directory [mono](https://github.com/alan-null/keepasshttp/tree/master/mono) which should work for you.
 
 With newer versions of Mono and KeePass it seems that the plgx file works pretty fine.
 More information about it are contained in the following experience report.
@@ -67,7 +67,7 @@ mono v2.10.8:
 
 I have no problems using "KeePassHttp.plgx". I simply dropped the .plgx-file in my KeePass folder, and it works.
 
-I'm currently using KeePass v2.22.  
+I'm currently using KeePass v2.22.
 Nevertheless, until KeePass v2.21 I used the 2 suggested .dll's and it worked fine too.
 
 Usually I only use chromeIPass, but I did a short test
@@ -85,11 +85,11 @@ KeePassHttp works out-of-the-box. You don't have to explicitely configure it.
 
 You can open the options dialog with menu: Tools > KeePassHttp Options
 
-[<img src="https://raw.github.com/pfn/keepasshttp/master/documentation/images/menu.jpg" alt="menu" width="300px" />](https://raw.github.com/pfn/keepasshttp/master/documentation/images/menu.jpg)
+[<img src="https://raw.github.com/alan-null/keepasshttp/master/documentation/images/menu.jpg" alt="menu" width="300px" />](https://raw.github.com/alan-null/keepasshttp/master/documentation/images/menu.jpg)
 
 The options dialog will appear:
 
-[<img src="https://raw.github.com/pfn/keepasshttp/master/documentation/images/options-general.png" alt="options-general" width="300px" />](https://raw.github.com/pfn/keepasshttp/master/documentation/images/options-general.png)
+[<img src="https://raw.github.com/alan-null/keepasshttp/master/documentation/images/options-general.png" alt="options-general" width="300px" />](https://raw.github.com/alan-null/keepasshttp/master/documentation/images/options-general.png)
 
 General tab
 
@@ -103,7 +103,7 @@ General tab
 6. removes all shared encryption-keys which are stored in the currently selected database. Every inquirer has to reauthenticate.
 7. removes all stored permissions in the entries of the currently selected database.
 
-[<img src="https://raw.github.com/pfn/keepasshttp/master/documentation/images/options-advanced.png" alt="options-advanced" width="300px" />](https://raw.github.com/pfn/keepasshttp/master/documentation/images/options-advanced.png)
+[<img src="https://raw.github.com/alan-null/keepasshttp/master/documentation/images/options-advanced.png" alt="options-advanced" width="300px" />](https://raw.github.com/alan-null/keepasshttp/master/documentation/images/options-advanced.png)
 
 Advanced tab
 
@@ -111,19 +111,19 @@ Advanced tab
 9. KeePassHttp no longer asks for permission to update an entry, it always allows updating them.
 10. Searching for entries is no longer restricted to the current active database in KeePass but is extended to all opened databases!
   - __Important:__ Even if another database is not connected with the inquirer, KeePassHttp will search and retrieve entries of all opened databases if the active one is connected to KeePassHttp!
-11. if activated KeePassHttp also search for string fields which are defined in the found entries and start with "KPH: " (note the space after colon). __The string fields will be transfered to the client in alphabetical order__. You can set string fields in the tab _Advanced_ of an entry.  
-[<img src="https://raw.github.com/pfn/keepasshttp/master/documentation/images/advanced-string-fields.png" alt="advanced tab of an entry" width="300px" />](https://raw.github.com/pfn/keepasshttp/master/documentation/images/advanced-string-fields.png)
+11. if activated KeePassHttp also search for string fields which are defined in the found entries and start with "KPH: " (note the space after colon). __The string fields will be transfered to the client in alphabetical order__. You can set string fields in the tab _Advanced_ of an entry.
+[<img src="https://raw.github.com/alan-null/keepasshttp/master/documentation/images/advanced-string-fields.png" alt="advanced tab of an entry" width="300px" />](https://raw.github.com/alan-null/keepasshttp/master/documentation/images/advanced-string-fields.png)
 
 ## Tips and Tricks
 
 ### Support multiple URLs for one username + password
 This is already implemented directly in KeePass.
 
-1. Open the context menu of an entry by clicking right on it and select _Duplicate entry_:  
-[<img src="https://raw.github.com/pfn/keepasshttp/master/documentation/images/keepass-context-menu.png" alt="context-menu-entry" />](https://raw.github.com/pfn/keepasshttp/master/documentation/images/keepass-context-menu.png)
+1. Open the context menu of an entry by clicking right on it and select _Duplicate entry_:
+[<img src="https://raw.github.com/alan-null/keepasshttp/master/documentation/images/keepass-context-menu.png" alt="context-menu-entry" />](https://raw.github.com/alan-null/keepasshttp/master/documentation/images/keepass-context-menu.png)
 
-2. Check the option to use references for username and password:  
-[<img src="https://raw.github.com/pfn/keepasshttp/master/documentation/images/keepass-duplicate-entry-references.png" alt="mark checkbox references" width="300px" />](https://raw.github.com/pfn/keepasshttp/master/documentation/images/keepass-duplicate-entry-references.png)
+2. Check the option to use references for username and password:
+[<img src="https://raw.github.com/alan-null/keepasshttp/master/documentation/images/keepass-duplicate-entry-references.png" alt="mark checkbox references" width="300px" />](https://raw.github.com/alan-null/keepasshttp/master/documentation/images/keepass-duplicate-entry-references.png)
 
 3. You can change the title, URL and evertything of the copied entry, but not the username and password. These fields contain a _Reference Key_ which refers to the _master entry_ you copied from.
 
@@ -131,7 +131,7 @@ This is already implemented directly in KeePass.
 
 __First:__ If an error occures it will be shown as notification in system tray or as message box in KeePass.
 
-Otherwise please check if it could be an error of the client you are using. For passIFox and chromeIPass you can [report an error here](https://github.com/pfn/passifox/issues/).
+Otherwise please check if it could be an error of the client you are using. For passIFox and chromeIPass you can [report an error here](https://github.com/alan-null/chromeIPass/issues/).
 
 
 If you are having problems with KeePassHttp, please tell us at least the following information:
@@ -143,12 +143,12 @@ If you are having problems with KeePassHttp, please tell us at least the followi
 
 ### HTTP Listener error message
 
-Maybe you get the following error message:  
-[<img src="https://raw.github.com/pfn/keepasshttp/master/documentation/images/http-listener-error.png" alt="http listener error" width="300px" />](https://raw.github.com/pfn/keepasshttp/master/documentation/images/http-listener-error.png)
+Maybe you get the following error message:
+[<img src="https://raw.github.com/alan-null/keepasshttp/master/documentation/images/http-listener-error.png" alt="http listener error" width="300px" />](https://raw.github.com/alan-null/keepasshttp/master/documentation/images/http-listener-error.png)
 
 In old versions the explaining first part of the message does not exist!
 
-This error occurs because you have multiple copies of KeePassHttp in your KeePass directory! Please check __all__ PLGX- and DLL-files in your _KeePass directory and all sub-directories_ whether they are a copy of KeePassHttp.  
+This error occurs because you have multiple copies of KeePassHttp in your KeePass directory! Please check __all__ PLGX- and DLL-files in your _KeePass directory and all sub-directories_ whether they are a copy of KeePassHttp.
 __Note:__ KeePass does _not_ detect plugins by filename but by extension! If you rename _KeePassHttp.plgx_ to _HelloWorld.plgx_ it is still a valid copy of KeePassHttp.
 
 If you _really_ have only one copy of KeePassHttp in your KeePass directory another application seems to use port 19455 to wait for signals. In this case try to stop all applications and restart everyone again while checking if the error still occurs.
@@ -174,7 +174,7 @@ http://www.host.com/subdomain2|7
 
 __Result:__ second entry is returned
 
- 
+
 ## Security
 
 For security reasons KeePassHttp communicates only with the symmetric-key algorithm AES.
@@ -226,7 +226,7 @@ This is the only point at which an administrator snooping traffic will be able t
 
 ### Generic HTTP request
 (based on packet sniffing and code analyssis)
-Generic HTTP request is json sent in POST message. Cipher, by means of OpenSSL library is `AES-256-CBC`, so key is 32 byte long. 
+Generic HTTP request is json sent in POST message. Cipher, by means of OpenSSL library is `AES-256-CBC`, so key is 32 byte long.
 
 ```
 Host: localhost:19455
@@ -254,7 +254,7 @@ Request, without key, seems like initialization of every key assignation session
     "RequestType":"test-associate",
     "TriggerUnlock":false
 }
-``` 
+```
 
 Response: (without success)
 ```javascript
@@ -273,7 +273,7 @@ Response: (without success)
 }
 ```
 
-If you have key, you can test with request like this: 
+If you have key, you can test with request like this:
 ```javascript
 {
     "Nonce":"+bG+EpbCR4jSnjROKAAw4A==", // random 128bit vector, base64 encoded
