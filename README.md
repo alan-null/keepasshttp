@@ -29,7 +29,7 @@ This plugin is primarily intended for use with [chromeIPass for Google Chrome](h
 
 ## Non-Windows / Manual Windows installation
 
- 1. Download [KeePassHttp](https://github.com/alan-null/chromeIPass/releases)
+ 1. Download [KeePassHttp](https://github.com/alan-null/keepasshttp/releases)
  2. Copy it into the KeePass directory
 	* default directory in Ubuntu14.04: /usr/lib/keepass2/
 	* default directory in Arch: /usr/share/keepass
