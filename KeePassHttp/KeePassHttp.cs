@@ -14,6 +14,9 @@ using KeePassLib.Security;
 
 using Newtonsoft.Json;
 using KeePass.Util.Spr;
+using KeePassHttp.Configuration;
+using KeePass.App.Configuration;
+using KeePassHttp.Abstraction;
 
 namespace KeePassHttp
 {
@@ -48,6 +51,42 @@ namespace KeePassHttp
         private Thread httpThread;
         private volatile bool stopped = false;
         Dictionary<string, RequestHandler> handlers = new Dictionary<string, RequestHandler>();
+
+        internal static Func<AceCustomConfig, IConfigProvider> ConfigProviderFactory = CreateDefaultFactory();
+
+        /// <summary>
+        /// Provider selection logic.
+        /// Test Mode:
+        ///   If KeePass is launched with the command line argument "--kph-ev-config"
+        ///   OR environment variable KPH_EV_CONFIG is set to 1/true,
+        ///   an EnvironmentConfigProvider is returned. This allows the automated Pester tests
+        ///   (KeePassHttp.Tests.ps1) to supply configuration without modifying the database/UI.
+        /// Normal Mode:
+        ///   Falls back to DefaultConfigProvider for interactive usage.
+        /// </summary>
+        private static Func<AceCustomConfig, IConfigProvider> CreateDefaultFactory()
+        {
+            try
+            {
+                var args = Environment.GetCommandLineArgs();
+                foreach (var a in args)
+                {
+                    if (a.Equals("--kph-ev-config", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return cfg => new EnvironmentConfigProvider(cfg);
+                    }
+                }
+
+                var ev = Environment.GetEnvironmentVariable("KPH_EV_CONFIG");
+                if (!string.IsNullOrEmpty(ev) && (ev == "1" || ev.Equals("true", StringComparison.OrdinalIgnoreCase)))
+                {
+                    return cfg => new EnvironmentConfigProvider(cfg);
+                }
+            }
+            catch { }
+
+            return cfg => new DefaultConfigProvider(cfg);
+        }
 
         public override string UpdateUrl { get { return "https://raw.githubusercontent.com/alan-null/keepasshttp/refs/heads/master/latest-version.txt"; } }
 
@@ -211,7 +250,7 @@ namespace KeePassHttp
 
                     listener = new HttpListener();
 
-                    var configOpt = new ConfigOpt(this.host.CustomConfig);
+                    var configOpt = ConfigProviderFactory(this.host.CustomConfig);
 
                     listener.Prefixes.Add(HTTP_SCHEME + configOpt.ListenerHost + ":" + configOpt.ListenerPort.ToString() + "/");
                     //listener.Prefixes.Add(HTTPS_PREFIX + HTTPS_PORT + "/");
@@ -357,7 +396,7 @@ namespace KeePassHttp
 
             var db = host.Database;
 
-            var configOpt = new ConfigOpt(this.host.CustomConfig);
+            var configOpt = ConfigProviderFactory(this.host.CustomConfig);
 
             if (request != null && (configOpt.UnlockDatabaseRequest || request.TriggerUnlock == "true") && !db.IsOpen)
             {
@@ -474,7 +513,7 @@ namespace KeePassHttp
         }
 
         /// <summary>
-        /// Liefert den SHA1 Hash 
+        /// Liefert den SHA1 Hash
         /// </summary>
         /// <param name="input">Eingabestring</param>
         /// <returns>SHA1 Hash der Eingabestrings</returns>

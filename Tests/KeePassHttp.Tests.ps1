@@ -1,6 +1,5 @@
 # Requires: KeePass running with KeePassHttp, test.kdbx unlocked
-
-# Start / validate KeePass test instance (ensures --kph-test-config)
+# Start / validate KeePass test instance (ensures --kph-ev-config)
 . "$PSScriptRoot\Start-KeePassTestDb.ps1"
 
 # wait for KeePassHttp endpoint to respond before starting tests

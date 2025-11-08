@@ -17,6 +17,7 @@ using KeePass;
 using KeePassLib.Cryptography.PasswordGenerator;
 using KeePassLib.Cryptography;
 using KeePass.Util.Spr;
+using KeePassHttp.Abstraction;
 
 namespace KeePassHttp
 {
@@ -115,7 +116,7 @@ namespace KeePassHttp
 
             List<PwDatabase> listDatabases = new List<PwDatabase>();
 
-            var configOpt = new ConfigOpt(this.host.CustomConfig);
+            var configOpt = ConfigProviderFactory(host.CustomConfig);
             if (configOpt.SearchInAllOpenedDatabases)
             {
                 foreach (PwDocument doc in host.MainWindow.DocumentManager.Documents)
@@ -294,7 +295,7 @@ namespace KeePassHttp
                     return title != host && entryUrl != host || (submithost != null && title != submithost && entryUrl != submithost);
                 };
 
-                var configOpt = new ConfigOpt(this.host.CustomConfig);
+                var configOpt = ConfigProviderFactory(this.host.CustomConfig);
                 var config = GetConfigEntry(true);
                 var autoAllowS = config.Strings.ReadSafe("Auto Allow");
                 var autoAllow = autoAllowS != null && autoAllowS.Trim() != "";
@@ -499,7 +500,7 @@ namespace KeePassHttp
             return distance[currentRow, m];
         }
 
-        private ResponseEntry PrepareElementForResponseEntries(ConfigOpt configOpt, PwEntryDatabase entryDatabase)
+        private ResponseEntry PrepareElementForResponseEntries(IConfigProvider configOpt, PwEntryDatabase entryDatabase)
         {
             SprContext ctx = new SprContext(entryDatabase.Entry, entryDatabase.Database, SprCompileFlags.All, false, false);
 
@@ -727,7 +728,7 @@ namespace KeePassHttp
         {
             PwEntry entry = null;
 
-            var configOpt = new ConfigOpt(this.host.CustomConfig);
+            var configOpt = ConfigProviderFactory(host.CustomConfig);
             if (configOpt.SearchInAllOpenedDatabases)
             {
                 foreach (PwDocument doc in host.MainWindow.DocumentManager.Documents)
