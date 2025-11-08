@@ -65,15 +65,10 @@ namespace KeePassHttp
                 return;
             }
 
-            var list = new PwObjectList<PwEntry>();
-
             var root = host.Database.RootGroup;
 
-            var parms = MakeSearchParameters();
+            var list = root.GetEntries(true);
 
-            parms.SearchString = @"^[A-Za-z0-9:/-]+\.[A-Za-z0-9:/-]+$"; // match anything looking like a domain or url
-
-            root.SearchEntries(parms, list);
             foreach (var entry in list)
             {
                 var name = entry.Strings.ReadSafe(PwDefs.TitleField);
