@@ -114,7 +114,78 @@ function Invoke-GetLogins {
     Invoke-RestMethod -Uri $Context.Endpoint -Method Post -ContentType "application/json" -Body $json
 }
 
+function Invoke-GetLoginsCount {
+    param(
+        [Parameter(Mandatory)][psobject]$Context,
+        [Parameter(Mandatory)][string]$Url
+    )
+    $p = New-VerifierPair -Context $Context
+    $body = @{
+        RequestType = "get-logins-count"
+        Id          = $Context.Id
+        Nonce       = $p.Nonce
+        Verifier    = $p.Verifier
+        Url         = Protect-Field -Context $Context -PlainText $Url -Nonce $p.Nonce
+    } | ConvertTo-Json
+    Invoke-RestMethod -Uri $Context.Endpoint -Method Post -ContentType "application/json" -Body $body
+}
+
+function Invoke-GeneratePassword {
+    param(
+        [Parameter(Mandatory)][psobject]$Context
+    )
+    $p = New-VerifierPair -Context $Context
+    $body = @{
+        RequestType = "generate-password"
+        Id          = $Context.Id
+        Nonce       = $p.Nonce
+        Verifier    = $p.Verifier
+    } | ConvertTo-Json
+    Invoke-RestMethod -Uri $Context.Endpoint -Method Post -ContentType "application/json" -Body $body
+}
+
+function Invoke-GetAllLogins {
+    param(
+        [Parameter(Mandatory)][psobject]$Context
+    )
+    $p = New-VerifierPair -Context $Context
+    $body = @{
+        RequestType = "get-all-logins"
+        Id          = $Context.Id
+        Nonce       = $p.Nonce
+        Verifier    = $p.Verifier
+    } | ConvertTo-Json
+    Invoke-RestMethod -Uri $Context.Endpoint -Method Post -ContentType "application/json" -Body $body
+}
+
+function Invoke-SetLogin {
+    param(
+        [Parameter(Mandatory)][psobject]$Context,
+        [Parameter(Mandatory)][string]$Url,
+        [Parameter(Mandatory)][string]$Login,
+        [Parameter(Mandatory)][string]$Password,
+        [string]$Uuid,
+        [string]$SubmitUrl,
+        [string]$Realm
+    )
+    $p = New-VerifierPair -Context $Context
+    $body = @{
+        RequestType = "set-login"
+        Id          = $Context.Id
+        Nonce       = $p.Nonce
+        Verifier    = $p.Verifier
+        Url         = Protect-Field -Context $Context -PlainText $Url      -Nonce $p.Nonce
+        Login       = Protect-Field -Context $Context -PlainText $Login    -Nonce $p.Nonce
+        Password    = Protect-Field -Context $Context -PlainText $Password -Nonce $p.Nonce
+    }
+    if ($Uuid)     { $body.Uuid      = Protect-Field -Context $Context -PlainText $Uuid      -Nonce $p.Nonce }
+    if ($SubmitUrl){ $body.SubmitUrl = Protect-Field -Context $Context -PlainText $SubmitUrl -Nonce $p.Nonce }
+    if ($Realm)    { $body.Realm     = Protect-Field -Context $Context -PlainText $Realm     -Nonce $p.Nonce }
+    $json = $body | ConvertTo-Json
+    Invoke-RestMethod -Uri $Context.Endpoint -Method Post -ContentType "application/json" -Body $json
+}
+
 Export-ModuleMember -Function `
     New-KphContext, New-Nonce, New-VerifierPair, `
-    Invoke-TestAssociate, Invoke-GetLogins, `
+    Invoke-TestAssociate, Invoke-GetLogins, Invoke-GetLoginsCount, Invoke-GetAllLogins, Invoke-GeneratePassword, Invoke-SetLogin, `
     Protect-Field, Unprotect-Field
