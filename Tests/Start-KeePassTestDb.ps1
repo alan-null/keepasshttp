@@ -4,7 +4,10 @@ $dbPath = (Get-Item .\test\test.kdbx).FullName
 
 function Start-KeePassTest {
     Write-Host "Starting KeePass test instance..."
-    & $keePassExe $dbPath -pw:test --kph-ev-config
+    Start-Process -FilePath $keePassExe `
+        -ArgumentList "$dbPath", "-pw:test", "--kph-ev-config" `
+        -WindowStyle Hidden `
+        -Environment @{"KPH_AlwaysAllowUpdates" = "1"; }
 }
 
 # Get existing KeePass processes (if any)

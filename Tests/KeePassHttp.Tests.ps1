@@ -193,7 +193,6 @@ Describe "KeePassHttp protocol" {
             $uuid = Unprotect-Field -Context $Context -Cipher $lookup.Entries[0].Uuid -Nonce $lookup.Nonce
 
             # Update entry
-            Write-Host "Verifying updated entry for $domain. Manual confirmation required." -ForegroundColor Yellow
             $newUsername = "updated_user_$domain"
             $newPassword = "updated_pass_$domain"
             $update = Invoke-SetLogin -Context $Context -Url "https://$domain/path/page" -Login $newUsername -Password $newPassword -Uuid $uuid
