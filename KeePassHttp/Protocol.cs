@@ -5,6 +5,7 @@ using System.Text;
 using KeePass.Plugins;
 using System.Reflection;
 using System.Diagnostics;
+using KeePassLib;
 
 namespace KeePassHttp
 {
@@ -202,20 +203,26 @@ namespace KeePassHttp
     public class ResponseEntry
     {
         public ResponseEntry() { }
-        public ResponseEntry(string name, string login, string password, string uuid, List<ResponseStringField> stringFields)
+        public ResponseEntry(string name, string login, string password, string uuid, List<ResponseStringField> stringFields, PwGroup group = null)
         {
             Login = login;
             Password = password;
             Uuid = uuid;
             Name = name;
             StringFields = stringFields;
+            if (group != null)
+            {
+                Group = new ResponseGroupField(group.GetFullPath("/", true), group.Uuid.ToHexString());
+            }
         }
         public string Login;
         public string Password;
         public string Uuid;
         public string Name;
+        public ResponseGroupField Group;
         public List<ResponseStringField> StringFields = null;
     }
+
     public class ResponseStringField
     {
         public ResponseStringField() { }
@@ -227,6 +234,19 @@ namespace KeePassHttp
         public string Key;
         public string Value;
     }
+
+    public class ResponseGroupField
+    {
+        public ResponseGroupField() { }
+        public ResponseGroupField(string name, string uuid)
+        {
+            Name = name;
+            Uuid = uuid;
+        }
+        public string Name;
+        public string Uuid;
+    }
+
     public class KeePassHttpEntryConfig
     {
         public HashSet<string> Allow = new HashSet<string>();

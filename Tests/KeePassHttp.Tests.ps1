@@ -122,6 +122,22 @@ Describe "KeePassHttp protocol" {
             $r.Entries.Count | Should -Be 2
             (Unprotect-Field -Context $Context -Cipher $r.Entries[0].Login -Nonce $r.Nonce) | Should -Be "user2"
         }
+
+        It "returns expected entry properties (Login, Uuid, Name, Password, Group)" {
+            $r = Invoke-GetLogins -Context $Context -Url "http://www.sort.example/"
+            $props = $r.Entries[0].PSObject.Properties.Name
+            $props.Count | Should -Be 5
+            $props | Should -Contain "Login"
+            $props | Should -Contain "Uuid"
+            $props | Should -Contain "Name"
+            $props | Should -Contain "Password"
+            $props | Should -Contain "Group"
+        }
+
+        It "returns group field" {
+            $r = Invoke-GetLogins -Context $Context -Url "http://www.sort.example/"
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[0].Group.Name -Nonce $r.Nonce) | Should -Be "test/sorting"
+        }
     }
 
     Context "GET_LOGINS_COUNT" {
@@ -159,6 +175,23 @@ Describe "KeePassHttp protocol" {
                 }
             }
             $found | Should -BeTrue
+        }
+
+        It "returns expected entry properties (Login, Uuid, Name, Group; no Password)" {
+            $all = Invoke-GetAllLogins -Context $Context
+            $props = $all.Entries[0].PSObject.Properties.Name
+            $props.Count | Should -Be 4
+            $props | Should -Contain "Login"
+            $props | Should -Contain "Uuid"
+            $props | Should -Contain "Name"
+            $props | Should -Contain "Group"
+        }
+
+        It "returns group field" {
+            $all = Invoke-GetAllLogins -Context $Context
+            (Unprotect-Field -Context $Context -Cipher $all.Entries[0].Group.Name -Nonce $all.Nonce) | Should -Be "test"
+            (Unprotect-Field -Context $Context -Cipher $all.Entries[0].Uuid -Nonce $all.Nonce) | Should -Be "34697A408A5B41C09F36897D623ECB31"
+            (Unprotect-Field -Context $Context -Cipher $all.Entries[0].Group.Uuid -Nonce $all.Nonce) | Should -Be "4CEFB31811DDFF4C9346DDECE64EF394"
         }
     }
 
@@ -221,6 +254,18 @@ Describe "KeePassHttp protocol" {
             [int]::TryParse($loginDec, [ref]$null) | Should -BeTrue   # login holds bits
             $passDec.Length | Should -BeGreaterThan 0
             $nameDec | Should -Be "generate-password"
+        }
+
+        It "generate-password returns correct properties in response" {
+            $gen = Invoke-GeneratePassword -Context $Context
+            $gen.Success | Should -BeTrue
+
+            $props = $gen.Entries[0].PSObject.Properties.Name
+            $props.Count | Should -Be 4
+            $props | Should -Contain "Login"
+            $props | Should -Contain "Uuid"
+            $props | Should -Contain "Name"
+            $props | Should -Contain "Password"
         }
     }
 

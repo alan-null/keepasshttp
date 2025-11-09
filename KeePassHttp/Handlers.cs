@@ -76,7 +76,7 @@ namespace KeePassHttp
                 var name = entry.Strings.ReadSafe(PwDefs.TitleField);
                 var login = GetUserPass(entry)[0];
                 var uuid = entry.Uuid.ToHexString();
-                var e = new ResponseEntry(name, login, null, uuid, null);
+                var e = new ResponseEntry(name, login, null, uuid, null, entry.ParentGroup);
                 entries.Add(e);
             }
 
@@ -92,12 +92,8 @@ namespace KeePassHttp
             resp.Success = true;
             resp.Id = r.Id;
             SetResponseVerifier(resp, aes);
-            foreach (var entry in resp.Entries)
-            {
-                entry.Name = CryptoTransform(entry.Name, false, true, aes, CMode.ENCRYPT);
-                entry.Login = CryptoTransform(entry.Login, false, true, aes, CMode.ENCRYPT);
-                entry.Uuid = CryptoTransform(entry.Uuid, false, true, aes, CMode.ENCRYPT);
-            }
+
+            EncryptResponseEntries(resp.Entries, aes);
         }
 
         private IEnumerable<PwEntryDatabase> FindMatchingEntries(Request r, Aes aes)
@@ -430,22 +426,7 @@ namespace KeePassHttp
                 resp.Id = r.Id;
                 SetResponseVerifier(resp, aes);
 
-                foreach (var entry in resp.Entries)
-                {
-                    entry.Name = CryptoTransform(entry.Name, false, true, aes, CMode.ENCRYPT);
-                    entry.Login = CryptoTransform(entry.Login, false, true, aes, CMode.ENCRYPT);
-                    entry.Uuid = CryptoTransform(entry.Uuid, false, true, aes, CMode.ENCRYPT);
-                    entry.Password = CryptoTransform(entry.Password, false, true, aes, CMode.ENCRYPT);
-
-                    if (entry.StringFields != null)
-                    {
-                        foreach (var sf in entry.StringFields)
-                        {
-                            sf.Key = CryptoTransform(sf.Key, false, true, aes, CMode.ENCRYPT);
-                            sf.Value = CryptoTransform(sf.Value, false, true, aes, CMode.ENCRYPT);
-                        }
-                    }
-                }
+                EncryptResponseEntries(resp.Entries, aes);
 
                 resp.Count = resp.Entries.Count;
             }
@@ -552,7 +533,46 @@ namespace KeePassHttp
                 }
             }
 
-            return new ResponseEntry(name, login, passwd, uuid, fields);
+            return new ResponseEntry(name, login, passwd, uuid, fields, entryDatabase.Entry.ParentGroup);
+        }
+
+        private void EncryptResponseEntries(IEnumerable<ResponseEntry> entries, Aes aes)
+        {
+            if (entries == null)
+            {
+                return;
+            }
+
+            foreach (var entry in entries)
+            {
+                EncryptProperty(ref entry.Name, aes);
+                EncryptProperty(ref entry.Login, aes);
+                EncryptProperty(ref entry.Uuid, aes);
+                EncryptProperty(ref entry.Password, aes);
+
+                if (entry.StringFields != null)
+                {
+                    foreach (var sf in entry.StringFields)
+                    {
+                        EncryptProperty(ref sf.Key, aes);
+                        EncryptProperty(ref sf.Value, aes);
+                    }
+                }
+
+                if (entry.Group != null)
+                {
+                    EncryptProperty(ref entry.Group.Name, aes);
+                    EncryptProperty(ref entry.Group.Uuid, aes);
+                }
+            }
+        }
+
+        private void EncryptProperty(ref string property, Aes aes)
+        {
+            if (property != null)
+            {
+                property = CryptoTransform(property, false, true, aes, CMode.ENCRYPT);
+            }
         }
 
         private void SetLoginHandler(Request r, Response resp, Aes aes)
@@ -698,13 +718,7 @@ namespace KeePassHttp
             resp.Id = r.Id;
             SetResponseVerifier(resp, aes);
 
-            foreach (var entry in resp.Entries)
-            {
-                entry.Name = CryptoTransform(entry.Name, false, true, aes, CMode.ENCRYPT);
-                entry.Login = CryptoTransform(entry.Login, false, true, aes, CMode.ENCRYPT);
-                entry.Uuid = CryptoTransform(entry.Uuid, false, true, aes, CMode.ENCRYPT);
-                entry.Password = CryptoTransform(entry.Password, false, true, aes, CMode.ENCRYPT);
-            }
+            EncryptResponseEntries(resp.Entries, aes);
         }
 
         private KeePassHttpEntryConfig GetEntryConfig(PwEntry e)
