@@ -3,11 +3,35 @@ $keePassExe = Join-Path "${env:ProgramFiles(x86)}\KeePass Password Safe 2" "KeeP
 $dbPath = (Get-Item .\test\test.kdbx).FullName
 
 function Start-KeePassTest {
-    Write-Host "Starting KeePass test instance..."
+    param(
+        [hashtable]$Environment = @{ "KPH_AlwaysAllowUpdates" = "1" }
+    )
+    $envStrings = $Environment.GetEnumerator() | ForEach-Object { "$($_.Key)=$($_.Value)" }
+    Write-Host "Starting KeePass test instance... @{$($envStrings -join '; ')}"
+
     Start-Process -FilePath $keePassExe `
         -ArgumentList "$dbPath", "-pw:test", "--kph-ev-config" `
-        -WindowStyle Hidden `
-        -Environment @{"KPH_AlwaysAllowUpdates" = "1"; }
+        -WindowStyle Minimized `
+        -Environment $Environment
+}
+
+function Restart-KeePassTest {
+    param(
+        [hashtable]$Environment = @{ "KPH_AlwaysAllowUpdates" = "1" }
+    )
+    $existing = Get-CimInstance Win32_Process -Filter "Name='KeePass.exe'" -ErrorAction SilentlyContinue
+    if ($existing) {
+        foreach ($proc in $existing) {
+            try {
+                Stop-Process -Id $proc.ProcessId -Force -ErrorAction Stop
+            }
+            catch {
+                Write-Warning "Failed to stop KeePass (PID $($proc.ProcessId)): $_"
+            }
+        }
+        Start-Sleep -Milliseconds 200
+    }
+    Start-KeePassTest -Environment $Environment
 }
 
 # Get existing KeePass processes (if any)
@@ -40,11 +64,13 @@ if ($answer -match '^[Yy]') {
         try {
             Stop-Process -Id $proc.ProcessId -Force -ErrorAction Stop
             Write-Host "Stopped KeePass (PID $($proc.ProcessId))."
-        } catch {
+        }
+        catch {
             Write-Warning "Failed to stop KeePass (PID $($proc.ProcessId)): $_"
         }
     }
     Start-KeePassTest
-} else {
+}
+else {
     Write-Host "Leaving existing KeePass instance running."
 }
