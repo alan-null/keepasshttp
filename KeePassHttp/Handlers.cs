@@ -69,14 +69,26 @@ namespace KeePassHttp
 
             var list = root.GetEntries(true);
 
+            var config = ConfigProviderFactory(host.CustomConfig);
+            var entries = new List<ResponseEntry>();
             foreach (var entry in list)
             {
                 var name = entry.Strings.ReadSafe(PwDefs.TitleField);
                 var login = GetUserPass(entry)[0];
                 var uuid = entry.Uuid.ToHexString();
                 var e = new ResponseEntry(name, login, null, uuid, null);
-                resp.Entries.Add(e);
+                entries.Add(e);
             }
+
+            if (config.SortResultByUsername)
+            {
+                resp.Entries.AddRange(entries.OrderBy(x => x.Login, StringComparer.OrdinalIgnoreCase));
+            }
+            else
+            {
+                resp.Entries.AddRange(entries.OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase));
+            }
+
             resp.Success = true;
             resp.Id = r.Id;
             SetResponseVerifier(resp, aes);

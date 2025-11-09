@@ -369,9 +369,19 @@ Describe "KeePassHttp protocol" {
             Assert-SortedField -Entries $all.Entries -Nonce $all.Nonce -Context $Context -Field Login
         }
 
+        It "returns entries sorted ascending by login (username sort enabled)" {
+            $all = Invoke-GetAllLogins -Context $Context
+            Assert-SortedField -Entries $all.Entries -Nonce $all.Nonce -Context $Context -Field Login
+        }
+
         It "returns entries sorted ascending by title when username sorting is disabled - host-specific query" {
             Restart-KeePassTest -Environment @{ "KPH_AlwaysAllowUpdates" = "1"; "KPH_SortResultByUsername" = "0" }
             $all = Invoke-GetLogins -Context $Context -Url "http://www.sort.example"
+            Assert-SortedField -Entries $all.Entries -Nonce $all.Nonce -Context $Context -Field Name
+        }
+
+        It "returns entries sorted ascending by title when username sorting is disabled" {
+            $all = Invoke-GetAllLogins -Context $Context
             Assert-SortedField -Entries $all.Entries -Nonce $all.Nonce -Context $Context -Field Name
         }
     }
