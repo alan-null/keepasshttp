@@ -600,15 +600,14 @@ namespace KeePassHttp
             if (uuid != null)
             {
                 // modify existing entry
-                UpdateEntry(uuid, username, password, urlHost, r.Id);
+                resp.Success = UpdateEntry(uuid, username, password, urlHost, r.Id);
             }
             else
             {
                 // create new entry
-                CreateEntry(username, password, urlHost, url, r, aes);
+                resp.Success = CreateEntry(username, password, urlHost, url, r, aes);
             }
 
-            resp.Success = true;
             resp.Id = r.Id;
             SetResponseVerifier(resp, aes);
         }

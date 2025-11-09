@@ -37,9 +37,10 @@ function New-KphContext {
 function Protect-Field {
     param(
         [Parameter(Mandatory)][psobject]$Context,
-        [Parameter(Mandatory)][string]$PlainText,
+        [Parameter(Mandatory)][AllowEmptyString()][string]$PlainText,
         [Parameter(Mandatory)][string]$Nonce
     )
+    if ($null -eq $PlainText) { $PlainText = '' }
     $aes = New-Aes -Key $Context.Key -Nonce $Nonce
     $enc = $aes.CreateEncryptor()
     try {
@@ -161,9 +162,9 @@ function Invoke-GetAllLogins {
 function Invoke-SetLogin {
     param(
         [Parameter(Mandatory)][psobject]$Context,
-        [Parameter(Mandatory)][string]$Url,
         [Parameter(Mandatory)][string]$Login,
         [Parameter(Mandatory)][string]$Password,
+        [string]$Url = [string]::Empty,
         [string]$Uuid,
         [string]$SubmitUrl,
         [string]$Realm

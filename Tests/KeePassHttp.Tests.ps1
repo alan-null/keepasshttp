@@ -240,6 +240,12 @@ Describe "KeePassHttp protocol" {
                 (Unprotect-Field -Context $Context -Cipher $_.Name -Nonce $lookup.Nonce) -eq $domain
             }
         }
+
+        It "set-login fails to update non-existing entry" {
+            $uuid = 'FAKE00001E458042B329D93686B6788A'
+            $update = Invoke-SetLogin -Context $Context -Login 'l' -Password 'p' -Uuid $uuid
+            $update.Success | Should -BeFalse
+        }
     }
 
     Context "GENERATE_PASSWORD" {
