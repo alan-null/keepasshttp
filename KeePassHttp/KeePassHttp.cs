@@ -329,9 +329,10 @@ namespace KeePassHttp
             {
                 aes.Mode = CipherMode.CBC;
                 aes.Padding = PaddingMode.PKCS7;
-                var handler = handlers[r.RequestType];
-                if (handler != null)
+                var validRequest = !string.IsNullOrEmpty(r.RequestType) && handlers.ContainsKey(r.RequestType);
+                if (validRequest)
                 {
+                    var handler = handlers[r.RequestType];
                     try
                     {
                         handler(r, response, aes);

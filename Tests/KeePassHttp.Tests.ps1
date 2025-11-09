@@ -269,6 +269,28 @@ Describe "KeePassHttp protocol" {
         }
     }
 
+    Context "HTTPLISTENER endpoint" {
+        It "returns 400 and expected error payload for unknown command invalid-request-type" {
+            $requestType = "invalid-request-type"
+            $pair = New-VerifierPair -Context $Context
+            $body = @{
+                RequestType = $requestType
+                Id          = $Context.Id
+                Nonce       = $pair.Nonce
+                Verifier    = $pair.Verifier
+            } | ConvertTo-Json -Depth 1
+
+            $response = Invoke-WebRequest -Uri $Context.Endpoint -Method Post -ContentType "application/json" -Body $body -SkipHttpErrorCheck
+            $response.StatusCode | Should -Be 400
+
+            $json = $response.Content | ConvertFrom-Json
+            $json.RequestType | Should -Be $requestType
+            $json.Error       | Should -Be "Unknown command: $requestType"
+            $json.Success     | Should -BeFalse
+            $json.Count       | Should -Be 0
+        }
+    }
+
     Context "Options_HideExpired" {
         It "returns expired entry when HideExpired is disabled" {
             $all = Invoke-GetLogins -Context $Context -Url "http://www.expired.com"
