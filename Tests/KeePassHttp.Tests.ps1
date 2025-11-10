@@ -180,10 +180,11 @@ Describe "KeePassHttp protocol" {
         It "returns expected entry properties (Login, Uuid, Name, Group; no Password)" {
             $all = Invoke-GetAllLogins -Context $Context
             $props = $all.Entries[0].PSObject.Properties.Name
-            $props.Count | Should -Be 4
+            $props.Count | Should -Be 5
             $props | Should -Contain "Login"
             $props | Should -Contain "Uuid"
             $props | Should -Contain "Name"
+            $props | Should -Contain "Password"
             $props | Should -Contain "Group"
         }
 

@@ -71,29 +71,8 @@ namespace KeePassHttp
 
             var config = ConfigProviderFactory(host.CustomConfig);
             var entries = new List<ResponseEntry>();
-            foreach (var entry in list)
-            {
-                var name = entry.Strings.ReadSafe(PwDefs.TitleField);
-                var login = GetUserPass(entry)[0];
-                var uuid = entry.Uuid.ToHexString();
-                var e = new ResponseEntry(name, login, null, uuid, null, entry.ParentGroup);
-                entries.Add(e);
-            }
 
-            if (config.SortResultByUsername)
-            {
-                resp.Entries.AddRange(entries.OrderBy(x => x.Login, StringComparer.OrdinalIgnoreCase));
-            }
-            else
-            {
-                resp.Entries.AddRange(entries.OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase));
-            }
-
-            resp.Success = true;
-            resp.Id = r.Id;
-            SetResponseVerifier(resp, aes);
-
-            EncryptResponseEntries(resp.Entries, aes);
+            CompleteGetLoginsResult(list.Select(p => new PwEntryDatabase(p, host.Database)), config, resp, r.Id, null, aes);
         }
 
         private IEnumerable<PwEntryDatabase> FindMatchingEntries(Request r, Aes aes)
@@ -371,8 +350,7 @@ namespace KeePassHttp
 
                     entryUrl = entryUrl.ToLower();
 
-                    entryDatabase.Entry.UsageCount = (ulong)LevenshteinDistance(compareToUrl, entryUrl);
-
+                    entryDatabase.MatchDistance = LevenshteinDistance(compareToUrl, entryUrl);
                 }
 
                 var itemsList = items.ToList();
@@ -380,55 +358,21 @@ namespace KeePassHttp
                 if (configOpt.SpecificMatchingOnly)
                 {
                     itemsList = (from e in itemsList
-                                 orderby e.Entry.UsageCount ascending
+                                 orderby e.MatchDistance ascending
                                  select e).ToList();
 
-                    ulong lowestDistance = itemsList.Count > 0 ?
-                        itemsList[0].Entry.UsageCount :
+                    var lowestDistance = itemsList.Count > 0 ?
+                        itemsList[0].MatchDistance :
                         0;
 
                     itemsList = (from e in itemsList
-                                 where e.Entry.UsageCount == lowestDistance
-                                 orderby e.Entry.UsageCount
+                                 where e.MatchDistance == lowestDistance
+                                 orderby e.MatchDistance
                                  select e).ToList();
 
                 }
 
-                if (configOpt.SortResultByUsername)
-                {
-                    var items2 = from e in itemsList orderby e.Entry.UsageCount ascending, GetUserPass(e)[0] ascending select e;
-                    itemsList = items2.ToList();
-                }
-                else
-                {
-                    var items2 = from e in itemsList orderby e.Entry.UsageCount ascending, e.Entry.Strings.ReadSafe(PwDefs.TitleField) ascending select e;
-                    itemsList = items2.ToList();
-                }
-
-                foreach (var entryDatabase in itemsList)
-                {
-                    var e = PrepareElementForResponseEntries(configOpt, entryDatabase);
-                    resp.Entries.Add(e);
-                }
-
-                if (itemsList.Count > 0)
-                {
-                    var names = (from e in resp.Entries select e.Name).Distinct<string>();
-                    var n = string.Join("\n    ", names.ToArray<string>());
-
-                    if (configOpt.ReceiveCredentialNotification)
-                    {
-                        ShowNotification(string.Format("{0}: {1} is receiving credentials for:\n    {2}", r.Id, host, n));
-                    }
-                }
-
-                resp.Success = true;
-                resp.Id = r.Id;
-                SetResponseVerifier(resp, aes);
-
-                EncryptResponseEntries(resp.Entries, aes);
-
-                resp.Count = resp.Entries.Count;
+                CompleteGetLoginsResult(itemsList, configOpt, resp, r.Id, host, aes);
             }
             else
             {
@@ -437,6 +381,44 @@ namespace KeePassHttp
                 SetResponseVerifier(resp, aes);
             }
         }
+
+        private void CompleteGetLoginsResult(IEnumerable<PwEntryDatabase> itemsList, IConfigProvider configOpt, Response resp, string rId, string host, Aes aes)
+        {
+            var paired = itemsList.Select(ed => new { ed.MatchDistance, Resp = PrepareElementForResponseEntries(configOpt, ed) }).ToList();
+
+            List<ResponseEntry> newEntries;
+            if (configOpt.SortResultByUsername)
+            {
+                newEntries = paired.OrderBy(p => p.MatchDistance).ThenBy(p => p.Resp.Login, StringComparer.OrdinalIgnoreCase).Select(p => p.Resp).ToList();
+            }
+            else
+            {
+                newEntries = paired.OrderBy(p => p.MatchDistance).ThenBy(p => p.Resp.Name, StringComparer.OrdinalIgnoreCase).Select(p => p.Resp).ToList();
+            }
+
+            if (newEntries.Count > 0)
+            {
+                resp.Entries.AddRange(newEntries);
+
+                if (configOpt.ReceiveCredentialNotification)
+                {
+                    var names = (from e in newEntries select e.Name).Distinct();
+                    var n = string.Join("\n    ", names.ToArray());
+
+                    string recipientLabel = host == null ? rId : string.Format("{0}: {1}", rId, host);
+                    ShowNotification(string.Format("'{0}' is receiving credentials for:\n    {1}", recipientLabel, n));
+                }
+            }
+
+            resp.Success = true;
+            resp.Id = rId;
+            SetResponseVerifier(resp, aes);
+
+            EncryptResponseEntries(newEntries, aes);
+
+            resp.Count = resp.Entries.Count;
+        }
+
         //http://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#C.23
         private int LevenshteinDistance(string source, string target)
         {
