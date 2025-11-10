@@ -244,6 +244,7 @@ namespace KeePassHttp
                     handlers.Add(Request.ASSOCIATE, AssociateHandler);
                     handlers.Add(Request.GET_LOGINS, GetLoginsHandler);
                     handlers.Add(Request.GET_LOGINS_COUNT, GetLoginsCountHandler);
+                    handlers.Add(Request.GET_LOGINS_BY_NAMES, GetLoginsByNamesHandler);
                     handlers.Add(Request.GET_ALL_LOGINS, GetAllLoginsHandler);
                     handlers.Add(Request.SET_LOGIN, SetLoginHandler);
                     handlers.Add(Request.GENERATE_PASSWORD, GeneratePassword);

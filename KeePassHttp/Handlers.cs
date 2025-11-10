@@ -382,6 +382,60 @@ namespace KeePassHttp
             }
         }
 
+        private void GetLoginsByNamesHandler(Request r, Response resp, Aes aes)
+        {
+            if (!VerifyRequest(r, aes))
+            {
+                return;
+            }
+
+            if (r.Names == null)
+            {
+                return;
+            }
+
+            var decryptedNames = new HashSet<string>();
+            foreach (string name in r.Names.Where(n => n != null))
+            {
+                decryptedNames.Add(CryptoTransform(name, true, false, aes, CMode.DECRYPT));
+            }
+
+            var listEntries = new List<PwEntryDatabase>();
+            var configOpt = ConfigProviderFactory(host.CustomConfig);
+            if (decryptedNames.Count != 0)
+            {
+                List<PwDatabase> listDatabases = new List<PwDatabase>();
+                if (configOpt.SearchInAllOpenedDatabases)
+                {
+                    foreach (PwDocument doc in host.MainWindow.DocumentManager.Documents)
+                    {
+                        if (doc.Database.IsOpen)
+                        {
+                            listDatabases.Add(doc.Database);
+                        }
+                    }
+                }
+                else
+                {
+                    listDatabases.Add(host.Database);
+                }
+
+                foreach (PwDatabase db in listDatabases)
+                {
+                    foreach (var pwEntry in db.RootGroup.GetEntries(true))
+                    {
+                        var title = pwEntry.Strings.ReadSafe(PwDefs.TitleField);
+                        if (title != null && decryptedNames.Contains(title))
+                        {
+                            listEntries.Add(new PwEntryDatabase(pwEntry, db));
+                        }
+                    }
+                }
+            }
+
+            CompleteGetLoginsResult(listEntries, configOpt, resp, r.Id, null, aes);
+        }
+
         private void CompleteGetLoginsResult(IEnumerable<PwEntryDatabase> itemsList, IConfigProvider configOpt, Response resp, string rId, string host, Aes aes)
         {
             var paired = itemsList.Select(ed => new { ed.MatchDistance, Resp = PrepareElementForResponseEntries(configOpt, ed) }).ToList();

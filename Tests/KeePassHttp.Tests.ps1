@@ -140,6 +140,38 @@ Describe "KeePassHttp protocol" {
         }
     }
 
+    Context "GET_LOGINS_BY_NAME" {
+        It "returns single entry for exact name 'ABC'" {
+            $r = Invoke-GetLoginsByName -Context $Context -Name @('ABC')
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 1
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[0].Name -Nonce $r.Nonce) | Should -Be "ABC"
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[0].Login -Nonce $r.Nonce) | Should -Be "user1"
+        }
+
+        It "returns two entries for exact names 'ABC' and 'XYZ'" {
+            $r = Invoke-GetLoginsByName -Context $Context -Name @('ABC', 'XYZ')
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 2
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[0].Name -Nonce $r.Nonce) | Should -Be "ABC"
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[0].Login -Nonce $r.Nonce) | Should -Be "user1"
+
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[1].Name -Nonce $r.Nonce) | Should -Be "XYZ"
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[1].Login -Nonce $r.Nonce) | Should -Be "user2"
+        }
+
+        It "returns expected entry properties: Login, Uuid, Name, Password, Group" {
+            $r = Invoke-GetLoginsByName -Context $Context -Name @('ABC')
+            $props = $r.Entries[0].PSObject.Properties.Name
+            $props.Count | Should -Be 5
+            $props | Should -Contain "Login"
+            $props | Should -Contain "Uuid"
+            $props | Should -Contain "Name"
+            $props | Should -Contain "Password"
+            $props | Should -Contain "Group"
+        }
+    }
+
     Context "GET_LOGINS_COUNT" {
         It "get-logins-count equals get-logins count for google.com" {
             $logins = Invoke-GetLogins -Context $Context -Url "http://www.google.com/"

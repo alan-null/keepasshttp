@@ -115,6 +115,31 @@ function Invoke-GetLogins {
     Invoke-RestMethod -Uri $Context.Endpoint -Method Post -ContentType "application/json" -Body $json
 }
 
+function Invoke-GetLoginsByName {
+    param(
+        [Parameter(Mandatory)][psobject]$Context,
+        [Parameter(Mandatory)][string[]]$Names,
+        [string]$SubmitUrl,
+        [string]$Realm
+    )
+    $p = New-VerifierPair -Context $Context
+    $req = @{
+        RequestType = "get-logins-by-names"
+        Id          = $Context.Id
+        Nonce       = $p.Nonce
+        Verifier    = $p.Verifier
+        Names       = @()
+    }
+    if ($SubmitUrl) { $req.SubmitUrl = Protect-Field -Context $Context -PlainText $SubmitUrl -Nonce $p.Nonce }
+    if ($Realm) { $req.Realm = Protect-Field -Context $Context -PlainText $Realm     -Nonce $p.Nonce }
+    $Names | ForEach-Object {
+        $protectedName = Protect-Field -Context $Context -PlainText $_ -Nonce $p.Nonce
+        $req.Names += $protectedName
+    }
+    $json = $req | ConvertTo-Json
+    Invoke-RestMethod -Uri $Context.Endpoint -Method Post -ContentType "application/json" -Body $json
+}
+
 function Invoke-GetLoginsCount {
     param(
         [Parameter(Mandatory)][psobject]$Context,
@@ -188,5 +213,5 @@ function Invoke-SetLogin {
 
 Export-ModuleMember -Function `
     New-KphContext, New-Nonce, New-VerifierPair, `
-    Invoke-TestAssociate, Invoke-GetLogins, Invoke-GetLoginsCount, Invoke-GetAllLogins, Invoke-GeneratePassword, Invoke-SetLogin, `
+    Invoke-TestAssociate, Invoke-GetLogins, Invoke-GetLoginsByName, Invoke-GetLoginsCount, Invoke-GetAllLogins, Invoke-GeneratePassword, Invoke-SetLogin, `
     Protect-Field, Unprotect-Field
