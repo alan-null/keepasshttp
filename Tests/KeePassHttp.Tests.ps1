@@ -337,12 +337,12 @@ Describe "KeePassHttp protocol" {
         }
 
         It "hides expired entry when HideExpired is enabled" {
-            Restart-KeePassTest -Environment @{ "KPH_AlwaysAllowUpdates" = "1" ; "KPH_HideExpired" = "1" }
+            Restart-KeePassTest -Environment @{ "KPH_HideExpired" = "1" }
 
             $all = Invoke-GetLogins -Context $Context -Url "http://www.expired.com"
             $all.Entries.Count | Should -Be 0
 
-            Restart-KeePassTest -Environment @{ "KPH_AlwaysAllowUpdates" = "1"; }
+            Restart-KeePassTest
         }
 
     }
@@ -360,7 +360,6 @@ Describe "KeePassHttp protocol" {
             @{
                 Name     = 'AllStringFields'
                 Env      = @{
-                    "KPH_AlwaysAllowUpdates"            = "1";
                     "KPH_ReturnStringFields"            = "1";
                     "KPH_ReturnStringFieldsWithKphOnly" = "0"
                 }
@@ -378,7 +377,6 @@ Describe "KeePassHttp protocol" {
             @{
                 Name     = 'KphOnly'
                 Env      = @{
-                    "KPH_AlwaysAllowUpdates"            = "1";
                     "KPH_ReturnStringFields"            = "1";
                     "KPH_ReturnStringFieldsWithKphOnly" = "1"
                 }
@@ -416,7 +414,7 @@ Describe "KeePassHttp protocol" {
 
     Context "Options_SpecificMatchingOnly" {
         BeforeAll {
-            Restart-KeePassTest -Environment @{ "KPH_AlwaysAllowUpdates" = "1"; "KPH_SpecificMatchingOnly" = "1" }
+            Restart-KeePassTest -Environment @{  "KPH_SpecificMatchingOnly" = "1" }
         }
 
         It "returns login user1 for subpath /path1" {
@@ -434,7 +432,7 @@ Describe "KeePassHttp protocol" {
 
     Context "Options_MatchSchemes" {
         BeforeAll {
-            Restart-KeePassTest -Environment @{ "KPH_AlwaysAllowUpdates" = "1"; "KPH_MatchSchemes" = "1" }
+            Restart-KeePassTest -Environment @{  "KPH_MatchSchemes" = "1" }
             $hostName = 'www.host.com'
         }
 
@@ -481,7 +479,7 @@ Describe "KeePassHttp protocol" {
         }
 
         It "returns entries sorted ascending by title when username sorting is disabled - host-specific query" {
-            Restart-KeePassTest -Environment @{ "KPH_AlwaysAllowUpdates" = "1"; "KPH_SortResultByUsername" = "0" }
+            Restart-KeePassTest -Environment @{  "KPH_SortResultByUsername" = "0" }
             $all = Invoke-GetLogins -Context $Context -Url "http://www.sort.example"
             Assert-SortedField -Entries $all.Entries -Nonce $all.Nonce -Context $Context -Field Name
         }

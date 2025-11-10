@@ -4,8 +4,12 @@ $dbPath = (Get-Item .\test\test.kdbx).FullName
 
 function Start-KeePassTest {
     param(
-        [hashtable]$Environment = @{ "KPH_AlwaysAllowUpdates" = "1" }
+        [hashtable]$Environment = @{}
     )
+    if (-not $Environment.ContainsKey("KPH_AlwaysAllowUpdates")) {
+        $Environment["KPH_AlwaysAllowUpdates"] = "1"
+    }
+
     $envStrings = $Environment.GetEnumerator() | ForEach-Object { "$($_.Key)=$($_.Value)" }
     Write-Host "Starting KeePass test instance... @{$($envStrings -join '; ')}"
 
