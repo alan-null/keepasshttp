@@ -88,6 +88,11 @@ namespace KeePassHttp
             return cfg => new DefaultConfigProvider(cfg);
         }
 
+        private IConfigProvider GetConfigProvider()
+        {
+            return ConfigProviderFactory(host.CustomConfig);
+        }
+
         public override string UpdateUrl { get { return "https://raw.githubusercontent.com/alan-null/keepasshttp/refs/heads/master/latest-version.txt"; } }
 
         private SearchParameters MakeSearchParameters()
@@ -251,7 +256,7 @@ namespace KeePassHttp
 
                     listener = new HttpListener();
 
-                    var configOpt = ConfigProviderFactory(this.host.CustomConfig);
+                    var configOpt = GetConfigProvider();
 
                     listener.Prefixes.Add(HTTP_SCHEME + configOpt.ListenerHost + ":" + configOpt.ListenerPort.ToString() + "/");
                     //listener.Prefixes.Add(HTTPS_PREFIX + HTTPS_PORT + "/");
@@ -398,7 +403,7 @@ namespace KeePassHttp
 
             var db = host.Database;
 
-            var configOpt = ConfigProviderFactory(this.host.CustomConfig);
+            var configOpt = GetConfigProvider();
 
             if (request != null && (configOpt.UnlockDatabaseRequest || request.TriggerUnlock == "true") && !db.IsOpen)
             {

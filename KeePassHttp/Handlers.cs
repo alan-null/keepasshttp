@@ -90,7 +90,7 @@ namespace KeePassHttp
 
             var list = root.GetEntries(true);
 
-            var config = ConfigProviderFactory(host.CustomConfig);
+            var config = GetConfigProvider();
             var entries = new List<ResponseEntry>();
 
             CompleteGetLoginsResult(list.Select(p => new PwEntryDatabase(p, host.Database)), config, resp, r.Id, null, aes);
@@ -117,7 +117,7 @@ namespace KeePassHttp
             var origSearchHost = searchHost;
             var parms = MakeSearchParameters();
 
-            var configOpt = ConfigProviderFactory(host.CustomConfig);
+            var configOpt = GetConfigProvider();
 
             int listCount = 0;
             foreach (PwDatabase db in GetDatabases(configOpt))
@@ -282,7 +282,7 @@ namespace KeePassHttp
                     return title != host && entryUrl != host || (submithost != null && title != submithost && entryUrl != submithost);
                 };
 
-                var configOpt = ConfigProviderFactory(this.host.CustomConfig);
+                var configOpt = GetConfigProvider();
                 var config = GetConfigEntry(true);
                 var autoAllowS = config.Strings.ReadSafe("Auto Allow");
                 var autoAllow = autoAllowS != null && autoAllowS.Trim() != "";
@@ -406,7 +406,7 @@ namespace KeePassHttp
             }
 
             var listEntries = new List<PwEntryDatabase>();
-            var configOpt = ConfigProviderFactory(host.CustomConfig);
+            var configOpt = GetConfigProvider();
             if (decryptedNames.Count != 0)
             {
                 foreach (PwDatabase db in GetDatabases(configOpt))
@@ -773,7 +773,7 @@ namespace KeePassHttp
         {
             PwEntry entry = null;
 
-            var configOpt = ConfigProviderFactory(host.CustomConfig);
+            var configOpt = GetConfigProvider();
             foreach (PwDatabase db in GetDatabases(configOpt))
             {
                 entry = db.RootGroup.FindEntry(uuid, true);
