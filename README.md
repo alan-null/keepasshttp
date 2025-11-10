@@ -268,7 +268,7 @@ Response: (without success)
     "RequestType":"test-associate",
     "Success":false,
     "Verifier":"",
-    "Version":"1.8.4.1",
+    "Version":"2.0.0.0",
     "objectName":""
 }
 ```
@@ -307,7 +307,7 @@ Response:
     "RequestType":"associate",
     "Success":true,
     "Verifier":"ChH0PtuQWP4UKTPhdP3XSgwFyVdekHmHT7YdL1EKA+A=",
-    "Version":"1.8.4.1",
+    "Version":"2.0.0.0",
     "objectName":""
 }
 ```
@@ -329,11 +329,19 @@ Request:
 ```
 
 Response:
+
+`Group` property is supported in version 2.0.0.1 and later.
+
 ```javascript
 {
     "Count":3,
     "Entries":[
         {
+            "Group":
+            {
+                "Name":"{encrypted group name}",
+                "Uuid":"{encrypted group UUID}"
+            },
             "Login":"{encrypted login base64}",
             "Name":"{encrypted item name}",
             "Password":"{encrypted Password}",
@@ -354,7 +362,7 @@ Response:
     "RequestType":"get-logins",
     "Success":true,
     "Verifier":"F87c4ggkMTSEptJT8/FypBH491kRexTAiEZxovLMvD8=",
-    "Version":"1.8.4.1",
+    "Version":"2.0.0.1",
     "objectName":""
 }
 
@@ -387,7 +395,7 @@ Response:
     "RequestType":"get-logins",
     "Success":true,
     "Verifier":"F87c4ggkMTSEptJT8/FypBH491kRexTAiEZxovLMvD8=",
-    "Version":"1.8.4.1",
+    "Version":"2.0.0.0",
     "objectName":""
 }
 ```
@@ -420,7 +428,7 @@ Response:
     "RequestType":"set-login",
     "Success":true,
     "Verifier":"4u8OINVGBtlCCPY7OnW5T616iPlzvf56LzPtPAwZIs0=",
-    "Version":"1.8.4.1",
+    "Version":"2.0.0.0",
     "objectName":""
 }
 ```
