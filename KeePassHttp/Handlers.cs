@@ -250,7 +250,7 @@ namespace KeePassHttp
             resp.Id = r.Id;
             var items = FindMatchingEntries(r, aes);
             SetResponseVerifier(resp, aes);
-            resp.Count = items.ToList().Count;
+            resp.Count = items.Count();
         }
 
         private void GetLoginsHandler(Request r, Response resp, Aes aes)
@@ -268,7 +268,8 @@ namespace KeePassHttp
             }
 
             var items = FindMatchingEntries(r, aes);
-            if (items.ToList().Count > 0)
+            var itemsList = items as IList<PwEntryDatabase> ?? items.ToList();
+            if (itemsList.Count > 0)
             {
                 Func<PwEntry, bool> filter = delegate (PwEntry e)
                 {
@@ -288,9 +289,11 @@ namespace KeePassHttp
                 var autoAllowS = config.Strings.ReadSafe("Auto Allow");
                 var autoAllow = autoAllowS != null && autoAllowS.Trim() != "";
                 autoAllow = autoAllow || configOpt.AlwaysAllowAccess;
-                var needPrompting = from e in items where filter(e.Entry) select e;
 
-                if (needPrompting.ToList().Count > 0 && !autoAllow)
+                var needPromptingSeq = itemsList.Where(e => filter(e.Entry));
+                var needPromptingList = needPromptingSeq as IList<PwEntryDatabase> ?? needPromptingSeq.ToList();
+
+                if (needPromptingList.Count > 0 && !autoAllow)
                 {
                     var win = this.host.MainWindow;
 
@@ -300,14 +303,13 @@ namespace KeePassHttp
                         {
                             f.Icon = win.Icon;
                             f.Plugin = this;
-                            f.Entries = (from e in items where filter(e.Entry) select e.Entry).ToList();
-                            //f.Entries = needPrompting.ToList();
+                            f.Entries = needPromptingList.Select(e => e.Entry).ToList();
                             f.Host = submithost != null ? submithost : host;
                             f.Load += delegate { f.Activate(); };
                             f.ShowDialog(win);
                             if (f.Remember && (f.Allowed || f.Denied))
                             {
-                                foreach (var e in needPrompting)
+                                foreach (var e in needPromptingList)
                                 {
                                     var c = GetEntryConfig(e.Entry);
                                     if (c == null)
@@ -328,7 +330,7 @@ namespace KeePassHttp
                             }
                             if (!f.Allowed)
                             {
-                                items = items.Except(needPrompting);
+                                itemsList = itemsList.Except(needPromptingList).ToList();
                             }
                         });
                     }
@@ -346,7 +348,7 @@ namespace KeePassHttp
 
                 compareToUrl = compareToUrl.ToLower();
 
-                foreach (var entryDatabase in items)
+                foreach (var entryDatabase in itemsList)
                 {
                     string entryUrl = string.Copy(entryDatabase.Entry.Strings.ReadSafe(PwDefs.UrlField));
                     if (string.IsNullOrEmpty(entryUrl))
@@ -358,8 +360,6 @@ namespace KeePassHttp
 
                     entryDatabase.MatchDistance = LevenshteinDistance(compareToUrl, entryUrl);
                 }
-
-                var itemsList = items.ToList();
 
                 if (configOpt.SpecificMatchingOnly)
                 {
@@ -447,7 +447,7 @@ namespace KeePassHttp
                 if (configOpt.ReceiveCredentialNotification)
                 {
                     var names = (from e in newEntries select e.Name).Distinct();
-                    var n = string.Join("\n    ", names.ToArray());
+                    var n = string.Join("\n    ", names);
 
                     string recipientLabel = host == null ? rId : string.Format("{0}: {1}", rId, host);
                     ShowNotification(string.Format("'{0}' is receiving credentials for:\n    {1}", recipientLabel, n));
@@ -551,7 +551,7 @@ namespace KeePassHttp
                 if (fields.Count > 0)
                 {
                     var fields2 = from e2 in fields orderby e2.Key ascending select e2;
-                    fields = fields2.ToList<ResponseStringField>();
+                    fields = fields2.ToList();
                 }
                 else
                 {
