@@ -58,6 +58,27 @@ namespace KeePassHttp
             return scheme;
         }
 
+        private List<PwDatabase> GetDatabases(IConfigProvider configOpt)
+        {
+            var listDatabases = new List<PwDatabase>();
+            if (configOpt.SearchInAllOpenedDatabases)
+            {
+                foreach (PwDocument doc in host.MainWindow.DocumentManager.Documents)
+                {
+                    if (doc.Database.IsOpen)
+                    {
+                        listDatabases.Add(doc.Database);
+                    }
+                }
+            }
+            else
+            {
+                listDatabases.Add(host.Database);
+            }
+
+            return listDatabases;
+        }
+
         private void GetAllLoginsHandler(Request r, Response resp, Aes aes)
         {
             if (!VerifyRequest(r, aes))
@@ -96,26 +117,10 @@ namespace KeePassHttp
             var origSearchHost = searchHost;
             var parms = MakeSearchParameters();
 
-            List<PwDatabase> listDatabases = new List<PwDatabase>();
-
             var configOpt = ConfigProviderFactory(host.CustomConfig);
-            if (configOpt.SearchInAllOpenedDatabases)
-            {
-                foreach (PwDocument doc in host.MainWindow.DocumentManager.Documents)
-                {
-                    if (doc.Database.IsOpen)
-                    {
-                        listDatabases.Add(doc.Database);
-                    }
-                }
-            }
-            else
-            {
-                listDatabases.Add(host.Database);
-            }
 
             int listCount = 0;
-            foreach (PwDatabase db in listDatabases)
+            foreach (PwDatabase db in GetDatabases(configOpt))
             {
                 searchHost = origSearchHost;
                 //get all possible entries for given host-name
@@ -404,23 +409,7 @@ namespace KeePassHttp
             var configOpt = ConfigProviderFactory(host.CustomConfig);
             if (decryptedNames.Count != 0)
             {
-                List<PwDatabase> listDatabases = new List<PwDatabase>();
-                if (configOpt.SearchInAllOpenedDatabases)
-                {
-                    foreach (PwDocument doc in host.MainWindow.DocumentManager.Documents)
-                    {
-                        if (doc.Database.IsOpen)
-                        {
-                            listDatabases.Add(doc.Database);
-                        }
-                    }
-                }
-                else
-                {
-                    listDatabases.Add(host.Database);
-                }
-
-                foreach (PwDatabase db in listDatabases)
+                foreach (PwDatabase db in GetDatabases(configOpt))
                 {
                     foreach (var pwEntry in db.RootGroup.GetEntries(true))
                     {
@@ -785,23 +774,13 @@ namespace KeePassHttp
             PwEntry entry = null;
 
             var configOpt = ConfigProviderFactory(host.CustomConfig);
-            if (configOpt.SearchInAllOpenedDatabases)
+            foreach (PwDatabase db in GetDatabases(configOpt))
             {
-                foreach (PwDocument doc in host.MainWindow.DocumentManager.Documents)
+                entry = db.RootGroup.FindEntry(uuid, true);
+                if (entry != null)
                 {
-                    if (doc.Database.IsOpen)
-                    {
-                        entry = doc.Database.RootGroup.FindEntry(uuid, true);
-                        if (entry != null)
-                        {
-                            break;
-                        }
-                    }
+                    break;
                 }
-            }
-            else
-            {
-                entry = host.Database.RootGroup.FindEntry(uuid, true);
             }
 
             if (entry == null)
