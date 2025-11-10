@@ -18,6 +18,7 @@ using KeePassLib.Cryptography.PasswordGenerator;
 using KeePassLib.Cryptography;
 using KeePass.Util.Spr;
 using KeePassHttp.Abstraction;
+using KeePassHttp.Extensions;
 
 namespace KeePassHttp
 {
@@ -101,17 +102,17 @@ namespace KeePassHttp
             string submitHost = null;
             string realm = null;
             var listResult = new List<PwEntryDatabase>();
-            var url = CryptoTransform(r.Url, true, false, aes, CMode.DECRYPT);
+            var url = r.Url.DecryptString(aes);
             string formHost, searchHost;
             formHost = searchHost = GetHost(url);
             string hostScheme = GetScheme(url);
             if (r.SubmitUrl != null)
             {
-                submitHost = GetHost(CryptoTransform(r.SubmitUrl, true, false, aes, CMode.DECRYPT));
+                submitHost = GetHost(r.SubmitUrl.DecryptString(aes));
             }
             if (r.Realm != null)
             {
-                realm = CryptoTransform(r.Realm, true, false, aes, CMode.DECRYPT);
+                realm = r.Realm.DecryptString(aes);
             }
 
             var origSearchHost = searchHost;
@@ -260,10 +261,10 @@ namespace KeePassHttp
             }
 
             string submithost = null;
-            var host = GetHost(CryptoTransform(r.Url, true, false, aes, CMode.DECRYPT));
+            var host = GetHost(r.Url.DecryptString(aes));
             if (r.SubmitUrl != null)
             {
-                submithost = GetHost(CryptoTransform(r.SubmitUrl, true, false, aes, CMode.DECRYPT));
+                submithost = GetHost(r.SubmitUrl.DecryptString(aes));
             }
 
             var items = FindMatchingEntries(r, aes);
@@ -336,11 +337,11 @@ namespace KeePassHttp
                 string compareToUrl = null;
                 if (r.SubmitUrl != null)
                 {
-                    compareToUrl = CryptoTransform(r.SubmitUrl, true, false, aes, CMode.DECRYPT);
+                    compareToUrl = r.SubmitUrl.DecryptString(aes);
                 }
                 if (string.IsNullOrEmpty(compareToUrl))
                 {
-                    compareToUrl = CryptoTransform(r.Url, true, false, aes, CMode.DECRYPT);
+                    compareToUrl = r.Url.DecryptString(aes);
                 }
 
                 compareToUrl = compareToUrl.ToLower();
@@ -402,7 +403,7 @@ namespace KeePassHttp
             var decryptedNames = new HashSet<string>();
             foreach (string name in r.Names.Where(n => n != null))
             {
-                decryptedNames.Add(CryptoTransform(name, true, false, aes, CMode.DECRYPT));
+                decryptedNames.Add(name.DecryptString(aes));
             }
 
             var listEntries = new List<PwEntryDatabase>();
@@ -594,10 +595,7 @@ namespace KeePassHttp
 
         private void EncryptProperty(ref string property, Aes aes)
         {
-            if (property != null)
-            {
-                property = CryptoTransform(property, false, true, aes, CMode.ENCRYPT);
-            }
+            property = property.EncryptString(aes);
         }
 
         private void SetLoginHandler(Request r, Response resp, Aes aes)
@@ -607,19 +605,19 @@ namespace KeePassHttp
                 return;
             }
 
-            string url = CryptoTransform(r.Url, true, false, aes, CMode.DECRYPT);
+            string url = r.Url.DecryptString(aes);
             var urlHost = GetHost(url);
 
             PwUuid uuid = null;
             string username, password;
 
-            username = CryptoTransform(r.Login, true, false, aes, CMode.DECRYPT);
-            password = CryptoTransform(r.Password, true, false, aes, CMode.DECRYPT);
+            username = r.Login.DecryptString(aes);
+            password = r.Password.DecryptString(aes);
 
             if (r.Uuid != null)
             {
                 uuid = new PwUuid(MemUtil.HexStringToByteArray(
-                        CryptoTransform(r.Uuid, true, false, aes, CMode.DECRYPT)));
+                        r.Uuid.DecryptString(aes)));
             }
 
             if (uuid != null)
@@ -847,7 +845,7 @@ namespace KeePassHttp
             string realm = null;
             if (r.Realm != null)
             {
-                realm = CryptoTransform(r.Realm, true, false, aes, CMode.DECRYPT);
+                realm = r.Realm.DecryptString(aes);
             }
 
             var root = host.Database.RootGroup;
@@ -862,7 +860,7 @@ namespace KeePassHttp
             string submithost = null;
             if (r.SubmitUrl != null)
             {
-                submithost = GetHost(CryptoTransform(r.SubmitUrl, true, false, aes, CMode.DECRYPT));
+                submithost = GetHost(r.SubmitUrl.DecryptString(aes));
             }
 
             string baseUrl = url;
