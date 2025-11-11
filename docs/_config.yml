@@ -1,0 +1,13 @@
+title: KeePassHttp
+description: KeePassHttp is a plugin for KeePass that provides a secure means of exposing KeePass entries via HTTP for clients to access.
+repository: dummy/dummy
+
+remote_theme: just-the-docs/just-the-docs
+plugins:
+- jekyll-remote-theme
+
+nav_external_links:
+  - title: Latest Release
+    url: https://github.com/alan-null/keepasshttp/releases/latest
+    hide_icon: false
+    opens_in_new_tab: true

@@ -359,3 +359,5 @@ Resource.designer.cs
 *.zip
 KeePassHttp.plgx
 mono/KeePassHttp.dll
+docs/_site/
+docs/.jekyll-cache/
