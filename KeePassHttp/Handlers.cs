@@ -18,6 +18,7 @@ using KeePassLib.Cryptography.PasswordGenerator;
 using KeePassLib.Cryptography;
 using KeePass.Util.Spr;
 using KeePassHttp.Abstraction;
+using KeePassHttp.Extensions;
 
 namespace KeePassHttp
 {
@@ -58,47 +59,9 @@ namespace KeePassHttp
             return scheme;
         }
 
-        private void GetAllLoginsHandler(Request r, Response resp, Aes aes)
+        private List<PwDatabase> GetDatabases(IConfigProvider configOpt)
         {
-            if (!VerifyRequest(r, aes))
-            {
-                return;
-            }
-
-            var root = host.Database.RootGroup;
-
-            var list = root.GetEntries(true);
-
-            var config = ConfigProviderFactory(host.CustomConfig);
-            var entries = new List<ResponseEntry>();
-
-            CompleteGetLoginsResult(list.Select(p => new PwEntryDatabase(p, host.Database)), config, resp, r.Id, null, aes);
-        }
-
-        private IEnumerable<PwEntryDatabase> FindMatchingEntries(Request r, Aes aes)
-        {
-            string submitHost = null;
-            string realm = null;
-            var listResult = new List<PwEntryDatabase>();
-            var url = CryptoTransform(r.Url, true, false, aes, CMode.DECRYPT);
-            string formHost, searchHost;
-            formHost = searchHost = GetHost(url);
-            string hostScheme = GetScheme(url);
-            if (r.SubmitUrl != null)
-            {
-                submitHost = GetHost(CryptoTransform(r.SubmitUrl, true, false, aes, CMode.DECRYPT));
-            }
-            if (r.Realm != null)
-            {
-                realm = CryptoTransform(r.Realm, true, false, aes, CMode.DECRYPT);
-            }
-
-            var origSearchHost = searchHost;
-            var parms = MakeSearchParameters();
-
-            List<PwDatabase> listDatabases = new List<PwDatabase>();
-
-            var configOpt = ConfigProviderFactory(host.CustomConfig);
+            var listDatabases = new List<PwDatabase>();
             if (configOpt.SearchInAllOpenedDatabases)
             {
                 foreach (PwDocument doc in host.MainWindow.DocumentManager.Documents)
@@ -114,123 +77,245 @@ namespace KeePassHttp
                 listDatabases.Add(host.Database);
             }
 
-            int listCount = 0;
-            foreach (PwDatabase db in listDatabases)
+            return listDatabases;
+        }
+
+        private void GetAllLoginsHandler(Request r, Response resp, Aes aes)
+        {
+            if (!VerifyRequest(r, aes))
             {
-                searchHost = origSearchHost;
+                return;
+            }
+
+            var root = host.Database.RootGroup;
+
+            var list = root.GetEntries(true);
+
+            var config = GetConfigProvider();
+
+            CompleteGetLoginsResult(list.Select(p => new PwEntryDatabase(p, host.Database)), config, resp, r.Id, null, aes);
+        }
+
+        private List<PwEntryDatabase> FindMatchingEntries(Request r, Aes aes)
+        {
+            string submitHost = null;
+            string realm = null;
+
+            var url = r.Url.DecryptString(aes);
+            var formHost = GetHost(url);
+            var hostScheme = GetScheme(url);
+
+            if (r.SubmitUrl != null)
+            {
+                submitHost = GetHost(r.SubmitUrl.DecryptString(aes));
+            }
+
+            if (r.Realm != null)
+            {
+                realm = r.Realm.DecryptString(aes);
+            }
+
+            var parms = MakeSearchParameters();
+            var configOpt = GetConfigProvider();
+
+            var candidates = new List<PwEntryDatabase>();
+            string origSearchHost = formHost;
+
+            foreach (PwDatabase db in GetDatabases(configOpt))
+            {
+                string searchHost = origSearchHost;
+                int before = candidates.Count;
                 //get all possible entries for given host-name
-                while (listResult.Count == listCount && (origSearchHost == searchHost || searchHost.IndexOf(".") != -1))
+                while (candidates.Count == before && (origSearchHost == searchHost || searchHost.IndexOf('.') != -1))
                 {
                     parms.SearchString = string.Format("^{0}$|/{0}/?", searchHost);
-                    var listEntries = new PwObjectList<PwEntry>();
-                    db.RootGroup.SearchEntries(parms, listEntries);
-                    foreach (var le in listEntries)
+                    var found = new PwObjectList<PwEntry>();
+                    db.RootGroup.SearchEntries(parms, found);
+                    foreach (var e in found)
                     {
-                        listResult.Add(new PwEntryDatabase(le, db));
+                        candidates.Add(new PwEntryDatabase(e, db));
                     }
-                    searchHost = searchHost.Substring(searchHost.IndexOf(".") + 1);
 
-                    //searchHost contains no dot --> prevent possible infinite loop
-                    if (searchHost == origSearchHost)
+                    int dot = searchHost.IndexOf('.');
+                    if (dot == -1)
                     {
                         break;
                     }
+
+                    searchHost = searchHost.Substring(dot + 1);
                 }
-                listCount = listResult.Count;
             }
 
+            var filtered = new List<PwEntryDatabase>(candidates.Count);
+            DateTime nowUtc = DateTime.UtcNow;
 
-            Func<PwEntry, bool> filter = delegate (PwEntry e)
+            foreach (var ed in candidates)
             {
-                var title = e.Strings.ReadSafe(PwDefs.TitleField);
-                var entryUrl = e.Strings.ReadSafe(PwDefs.UrlField);
-                var c = GetEntryConfig(e);
-                if (c != null)
+                var entry = ed.Entry;
+                var title = entry.Strings.ReadSafe(PwDefs.TitleField) ?? "";
+                var entryUrl = entry.Strings.ReadSafe(PwDefs.UrlField);
+                var cfg = GetEntryConfig(entry);
+
+                // 1. Expiry validation
+                if (IsExpired(entry, configOpt, nowUtc))
                 {
-                    if (c.Allow.Contains(formHost) && (submitHost == null || c.Allow.Contains(submitHost)))
-                    {
-                        return true;
-                    }
-
-                    if (c.Deny.Contains(formHost) || (submitHost != null && c.Deny.Contains(submitHost)))
-                    {
-                        return false;
-                    }
-
-                    if (realm != null && c.Realm != realm)
-                    {
-                        return false;
-                    }
+                    continue;
                 }
 
-                if (entryUrl != null && (entryUrl.StartsWith("http://") || entryUrl.StartsWith("https://") || title.StartsWith("ftp://") || title.StartsWith("sftp://")))
+                // 2. Config deny / realm mismatch
+                if (IsDeniedByConfig(cfg, formHost, submitHost))
                 {
-                    var uHost = GetHost(entryUrl);
-                    if (formHost.EndsWith(uHost))
-                    {
-                        return true;
-                    }
+                    continue;
                 }
 
-                if (title.StartsWith("http://") || title.StartsWith("https://") || title.StartsWith("ftp://") || title.StartsWith("sftp://"))
+                if (RealmMismatch(cfg, realm))
                 {
-                    var uHost = GetHost(title);
-                    if (formHost.EndsWith(uHost))
-                    {
-                        return true;
-                    }
+                    continue;
                 }
-                return formHost.Contains(title) || (entryUrl != null && formHost.Contains(entryUrl));
-            };
 
-            Func<PwEntry, bool> filterSchemes = delegate (PwEntry e)
+                // 3. Explicit allow
+                if (ConfigExplicitAllow(cfg, formHost, submitHost))
+                {
+                    if (configOpt.MatchSchemes && !SchemeMatches(hostScheme, entryUrl, title))
+                    {
+                        continue;
+                    }
+
+                    filtered.Add(ed);
+                    continue;
+                }
+
+                // 4. Host match
+                if (!HostMatches(formHost, title, entryUrl))
+                {
+                    continue;
+                }
+
+                // 5. Scheme (optional)
+                if (configOpt.MatchSchemes && !SchemeMatches(hostScheme, entryUrl, title))
+                {
+                    continue;
+                }
+
+                filtered.Add(ed);
+            }
+
+            return filtered;
+        }
+
+        private static readonly string[] _UriPrefixes = { "http://", "https://", "ftp://", "sftp://" };
+
+        private static bool IsLikelyUri(string s)
+        {
+            if (string.IsNullOrEmpty(s))
             {
-                var title = e.Strings.ReadSafe(PwDefs.TitleField);
-                var entryUrl = e.Strings.ReadSafe(PwDefs.UrlField);
+                return false;
+            }
 
-                if (entryUrl != null)
-                {
-                    var entryScheme = GetScheme(entryUrl);
-                    if (entryScheme == hostScheme)
-                    {
-                        return true;
-                    }
-                }
-
-                var titleScheme = GetScheme(title);
-                if (titleScheme == hostScheme)
+            foreach (var p in _UriPrefixes)
+            {
+                if (s.StartsWith(p, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
-
-                return false;
-            };
-
-            var result = from e in listResult where filter(e.Entry) select e;
-
-            if (configOpt.MatchSchemes)
-            {
-                result = from e in result where filterSchemes(e.Entry) select e;
             }
+            return false;
+        }
 
-            Func<PwEntry, bool> hideExpired = delegate (PwEntry e)
+        private bool SchemeMatches(string hostScheme, string entryUrl, string title)
+        {
+            if (!string.IsNullOrEmpty(entryUrl) && GetScheme(entryUrl) == hostScheme)
             {
-                DateTime dtNow = DateTime.UtcNow;
-
-                if (e.Expires && (e.ExpiryTime <= dtNow))
-                {
-                    return false;
-                }
-
                 return true;
-            };
-
-            if (configOpt.HideExpired)
-            {
-                result = from e in result where hideExpired(e.Entry) select e;
             }
 
-            return result;
+            return GetScheme(title) == hostScheme;
+        }
+
+        private static bool IsExpired(PwEntry e, IConfigProvider cfg, DateTime nowUtc)
+        {
+            return cfg.HideExpired && e.Expires && e.ExpiryTime <= nowUtc;
+        }
+        private static bool IsDeniedByConfig(KeePassHttpEntryConfig cfg, string formHost, string submitHost)
+        {
+            if (cfg == null)
+            {
+                return false;
+            }
+
+            if (cfg.Deny.Contains(formHost))
+            {
+                return true;
+            }
+
+            if (submitHost != null && cfg.Deny.Contains(submitHost))
+            {
+                return true;
+            }
+
+            return false;
+        }
+        private static bool RealmMismatch(KeePassHttpEntryConfig cfg, string realm)
+        {
+            return realm != null && cfg != null && cfg.Realm != realm;
+        }
+        private static bool ConfigExplicitAllow(KeePassHttpEntryConfig cfg, string formHost, string submitHost)
+        {
+            if (cfg == null)
+            {
+                return false;
+            }
+
+            if (!cfg.Allow.Contains(formHost))
+            {
+                return false;
+            }
+
+            if (submitHost == null)
+            {
+                return true;
+            }
+
+            return cfg.Allow.Contains(submitHost);
+        }
+
+        private static bool HostMatches(string formHost, string title, string entryUrl)
+        {
+            if (string.IsNullOrEmpty(formHost))
+            {
+                return false;
+            }
+
+            return CheckMatch(entryUrl, formHost) || CheckMatch(title, formHost);
+        }
+
+        private static bool CheckMatch(string input, string formHost)
+        {
+            if (string.IsNullOrEmpty(input))
+            {
+                return false;
+            }
+
+            if (IsLikelyUri(input))
+            {
+                var host = GetStaticHost(input);
+                if (!string.IsNullOrEmpty(host) && formHost.EndsWith(host))
+                {
+                    return true;
+                }
+            }
+
+            return formHost.Contains(input);
+        }
+
+        private static string GetStaticHost(string uri)
+        {
+            try
+            {
+                var u = new Uri(uri);
+                return u.Host;
+            }
+            catch { return ""; }
         }
 
         private void GetLoginsCountHandler(Request r, Response resp, Aes aes)
@@ -244,7 +329,7 @@ namespace KeePassHttp
             resp.Id = r.Id;
             var items = FindMatchingEntries(r, aes);
             SetResponseVerifier(resp, aes);
-            resp.Count = items.ToList().Count;
+            resp.Count = items.Count;
         }
 
         private void GetLoginsHandler(Request r, Response resp, Aes aes)
@@ -254,132 +339,123 @@ namespace KeePassHttp
                 return;
             }
 
-            string submithost = null;
-            var host = GetHost(CryptoTransform(r.Url, true, false, aes, CMode.DECRYPT));
+            string submitHost = null;
+            var host = GetHost(r.Url.DecryptString(aes));
             if (r.SubmitUrl != null)
             {
-                submithost = GetHost(CryptoTransform(r.SubmitUrl, true, false, aes, CMode.DECRYPT));
+                submitHost = GetHost(r.SubmitUrl.DecryptString(aes));
             }
 
-            var items = FindMatchingEntries(r, aes);
-            if (items.ToList().Count > 0)
-            {
-                Func<PwEntry, bool> filter = delegate (PwEntry e)
-                {
-                    var c = GetEntryConfig(e);
-
-                    var title = e.Strings.ReadSafe(PwDefs.TitleField);
-                    var entryUrl = e.Strings.ReadSafe(PwDefs.UrlField);
-                    if (c != null)
-                    {
-                        return title != host && entryUrl != host && !c.Allow.Contains(host) || (submithost != null && !c.Allow.Contains(submithost) && submithost != title && submithost != entryUrl);
-                    }
-                    return title != host && entryUrl != host || (submithost != null && title != submithost && entryUrl != submithost);
-                };
-
-                var configOpt = ConfigProviderFactory(this.host.CustomConfig);
-                var config = GetConfigEntry(true);
-                var autoAllowS = config.Strings.ReadSafe("Auto Allow");
-                var autoAllow = autoAllowS != null && autoAllowS.Trim() != "";
-                autoAllow = autoAllow || configOpt.AlwaysAllowAccess;
-                var needPrompting = from e in items where filter(e.Entry) select e;
-
-                if (needPrompting.ToList().Count > 0 && !autoAllow)
-                {
-                    var win = this.host.MainWindow;
-
-                    using (var f = new AccessControlForm())
-                    {
-                        win.Invoke((MethodInvoker)delegate
-                        {
-                            f.Icon = win.Icon;
-                            f.Plugin = this;
-                            f.Entries = (from e in items where filter(e.Entry) select e.Entry).ToList();
-                            //f.Entries = needPrompting.ToList();
-                            f.Host = submithost != null ? submithost : host;
-                            f.Load += delegate { f.Activate(); };
-                            f.ShowDialog(win);
-                            if (f.Remember && (f.Allowed || f.Denied))
-                            {
-                                foreach (var e in needPrompting)
-                                {
-                                    var c = GetEntryConfig(e.Entry);
-                                    if (c == null)
-                                    {
-                                        c = new KeePassHttpEntryConfig();
-                                    }
-
-                                    var set = f.Allowed ? c.Allow : c.Deny;
-                                    set.Add(host);
-                                    if (submithost != null && submithost != host)
-                                    {
-                                        set.Add(submithost);
-                                    }
-
-                                    SetEntryConfig(e.Entry, c);
-
-                                }
-                            }
-                            if (!f.Allowed)
-                            {
-                                items = items.Except(needPrompting);
-                            }
-                        });
-                    }
-                }
-
-                string compareToUrl = null;
-                if (r.SubmitUrl != null)
-                {
-                    compareToUrl = CryptoTransform(r.SubmitUrl, true, false, aes, CMode.DECRYPT);
-                }
-                if (string.IsNullOrEmpty(compareToUrl))
-                {
-                    compareToUrl = CryptoTransform(r.Url, true, false, aes, CMode.DECRYPT);
-                }
-
-                compareToUrl = compareToUrl.ToLower();
-
-                foreach (var entryDatabase in items)
-                {
-                    string entryUrl = string.Copy(entryDatabase.Entry.Strings.ReadSafe(PwDefs.UrlField));
-                    if (string.IsNullOrEmpty(entryUrl))
-                    {
-                        entryUrl = entryDatabase.Entry.Strings.ReadSafe(PwDefs.TitleField);
-                    }
-
-                    entryUrl = entryUrl.ToLower();
-
-                    entryDatabase.MatchDistance = LevenshteinDistance(compareToUrl, entryUrl);
-                }
-
-                var itemsList = items.ToList();
-
-                if (configOpt.SpecificMatchingOnly)
-                {
-                    itemsList = (from e in itemsList
-                                 orderby e.MatchDistance ascending
-                                 select e).ToList();
-
-                    var lowestDistance = itemsList.Count > 0 ?
-                        itemsList[0].MatchDistance :
-                        0;
-
-                    itemsList = (from e in itemsList
-                                 where e.MatchDistance == lowestDistance
-                                 orderby e.MatchDistance
-                                 select e).ToList();
-
-                }
-
-                CompleteGetLoginsResult(itemsList, configOpt, resp, r.Id, host, aes);
-            }
-            else
+            var itemsList = FindMatchingEntries(r, aes);
+            if (itemsList.Count == 0)
             {
                 resp.Success = true;
                 resp.Id = r.Id;
                 SetResponseVerifier(resp, aes);
+                return;
             }
+
+            var configOpt = GetConfigProvider();
+            var config = GetConfigEntry(true);
+            bool autoAllow = !string.IsNullOrWhiteSpace(config.Strings.ReadSafe("Auto Allow")) || configOpt.AlwaysAllowAccess;
+
+            var needPrompting = new List<PwEntryDatabase>();
+            if (!autoAllow)
+            {
+                foreach (var ed in itemsList)
+                {
+                    var e = ed.Entry;
+                    var c = GetEntryConfig(e);
+                    var title = e.Strings.ReadSafe(PwDefs.TitleField);
+                    var entryUrl = e.Strings.ReadSafe(PwDefs.UrlField);
+                    bool requires;
+                    if (c != null)
+                    {
+                        requires = (title != host && entryUrl != host && !c.Allow.Contains(host)) ||
+                                   (submitHost != null && !c.Allow.Contains(submitHost) &&
+                                    submitHost != title && submitHost != entryUrl);
+                    }
+                    else
+                    {
+                        requires = (title != host && entryUrl != host) ||
+                                   (submitHost != null &&
+                                   submitHost != title && submitHost != entryUrl);
+                    }
+                    if (requires)
+                    {
+                        needPrompting.Add(ed);
+                    }
+                }
+            }
+
+            if (needPrompting.Count > 0)
+            {
+                var win = this.host.MainWindow;
+                using (var f = new AccessControlForm())
+                {
+                    win.Invoke((MethodInvoker)delegate
+                    {
+                        f.Icon = win.Icon;
+                        f.Plugin = this;
+                        f.Entries = needPrompting.Select(e => e.Entry).ToList();
+                        f.Host = submitHost ?? host;
+                        f.Load += delegate { f.Activate(); };
+                        f.ShowDialog(win);
+
+                        if (f.Remember && (f.Allowed || f.Denied))
+                        {
+                            foreach (var ed in needPrompting)
+                            {
+                                var cfg = GetEntryConfig(ed.Entry) ?? new KeePassHttpEntryConfig();
+                                var set = f.Allowed ? cfg.Allow : cfg.Deny;
+                                set.Add(host);
+                                if (submitHost != null && submitHost != host)
+                                {
+                                    set.Add(submitHost);
+                                }
+
+                                SetEntryConfig(ed.Entry, cfg);
+                            }
+                        }
+
+                        if (!f.Allowed)
+                        {
+                            var denySet = new HashSet<PwEntryDatabase>(needPrompting);
+                            itemsList.RemoveAll(ed => denySet.Contains(ed));
+                        }
+                    });
+                }
+            }
+
+            if (itemsList.Count == 0)
+            {
+                resp.Success = true;
+                resp.Id = r.Id;
+                SetResponseVerifier(resp, aes);
+                return;
+            }
+
+            string compareToUrl = (r.SubmitUrl != null ? r.SubmitUrl.DecryptString(aes) : r.Url.DecryptString(aes)).ToLowerInvariant();
+
+            foreach (var entryDatabase in itemsList)
+            {
+                var entryUrl = entryDatabase.Entry.Strings.ReadSafe(PwDefs.UrlField);
+                if (string.IsNullOrEmpty(entryUrl))
+                {
+                    entryUrl = entryDatabase.Entry.Strings.ReadSafe(PwDefs.TitleField);
+                }
+
+                entryUrl = entryUrl.ToLowerInvariant();
+                entryDatabase.MatchDistance = LevenshteinDistance(compareToUrl, entryUrl);
+            }
+
+            if (configOpt.SpecificMatchingOnly && itemsList.Count > 1)
+            {
+                int min = itemsList.Min(e => e.MatchDistance);
+                itemsList = itemsList.Where(e => e.MatchDistance == min).ToList();
+            }
+
+            CompleteGetLoginsResult(itemsList, configOpt, resp, r.Id, host, aes);
         }
 
         private void GetLoginsByNamesHandler(Request r, Response resp, Aes aes)
@@ -397,30 +473,14 @@ namespace KeePassHttp
             var decryptedNames = new HashSet<string>();
             foreach (string name in r.Names.Where(n => n != null))
             {
-                decryptedNames.Add(CryptoTransform(name, true, false, aes, CMode.DECRYPT));
+                decryptedNames.Add(name.DecryptString(aes));
             }
 
             var listEntries = new List<PwEntryDatabase>();
-            var configOpt = ConfigProviderFactory(host.CustomConfig);
+            var configOpt = GetConfigProvider();
             if (decryptedNames.Count != 0)
             {
-                List<PwDatabase> listDatabases = new List<PwDatabase>();
-                if (configOpt.SearchInAllOpenedDatabases)
-                {
-                    foreach (PwDocument doc in host.MainWindow.DocumentManager.Documents)
-                    {
-                        if (doc.Database.IsOpen)
-                        {
-                            listDatabases.Add(doc.Database);
-                        }
-                    }
-                }
-                else
-                {
-                    listDatabases.Add(host.Database);
-                }
-
-                foreach (PwDatabase db in listDatabases)
+                foreach (PwDatabase db in GetDatabases(configOpt))
                 {
                     foreach (var pwEntry in db.RootGroup.GetEntries(true))
                     {
@@ -457,7 +517,7 @@ namespace KeePassHttp
                 if (configOpt.ReceiveCredentialNotification)
                 {
                     var names = (from e in newEntries select e.Name).Distinct();
-                    var n = string.Join("\n    ", names.ToArray());
+                    var n = string.Join("\n    ", names);
 
                     string recipientLabel = host == null ? rId : string.Format("{0}: {1}", rId, host);
                     ShowNotification(string.Format("'{0}' is receiving credentials for:\n    {1}", recipientLabel, n));
@@ -514,7 +574,7 @@ namespace KeePassHttp
                 var previousRow = currentRow ^ 1;
                 for (var j = 1; j <= m; j++)
                 {
-                    var cost = (target[j - 1] == source[i - 1] ? 0 : 1);
+                    var cost = target[j - 1] == source[i - 1] ? 0 : 1;
                     distance[currentRow, j] = Math.Min(Math.Min(
                                             distance[previousRow, j] + 1,
                                             distance[currentRow, j - 1] + 1),
@@ -540,11 +600,9 @@ namespace KeePassHttp
                 fields = new List<ResponseStringField>();
                 foreach (var sf in entryDatabase.Entry.Strings)
                 {
-                    var sfValue = entryDatabase.Entry.Strings.ReadSafe(sf.Key);
 
                     // follow references
-                    sfValue = SprEngine.Compile(sfValue, ctx);
-
+                    var sfValue = SprEngine.Compile(entryDatabase.Entry.Strings.ReadSafe(sf.Key), ctx);
                     if (configOpt.ReturnStringFieldsWithKphOnly)
                     {
                         if (sf.Key.StartsWith("KPH: "))
@@ -558,14 +616,13 @@ namespace KeePassHttp
                     }
                 }
 
-                if (fields.Count > 0)
+                if (fields.Count == 0)
                 {
-                    var fields2 = from e2 in fields orderby e2.Key ascending select e2;
-                    fields = fields2.ToList<ResponseStringField>();
+                    fields = null;
                 }
                 else
                 {
-                    fields = null;
+                    fields = fields.OrderBy(f => f.Key, StringComparer.OrdinalIgnoreCase).ToList();
                 }
             }
 
@@ -605,10 +662,7 @@ namespace KeePassHttp
 
         private void EncryptProperty(ref string property, Aes aes)
         {
-            if (property != null)
-            {
-                property = CryptoTransform(property, false, true, aes, CMode.ENCRYPT);
-            }
+            property = property.EncryptString(aes);
         }
 
         private void SetLoginHandler(Request r, Response resp, Aes aes)
@@ -618,19 +672,19 @@ namespace KeePassHttp
                 return;
             }
 
-            string url = CryptoTransform(r.Url, true, false, aes, CMode.DECRYPT);
+            string url = r.Url.DecryptString(aes);
             var urlHost = GetHost(url);
 
             PwUuid uuid = null;
             string username, password;
 
-            username = CryptoTransform(r.Login, true, false, aes, CMode.DECRYPT);
-            password = CryptoTransform(r.Password, true, false, aes, CMode.DECRYPT);
+            username = r.Login.DecryptString(aes);
+            password = r.Password.DecryptString(aes);
 
             if (r.Uuid != null)
             {
                 uuid = new PwUuid(MemUtil.HexStringToByteArray(
-                        CryptoTransform(r.Uuid, true, false, aes, CMode.DECRYPT)));
+                        r.Uuid.DecryptString(aes)));
             }
 
             if (uuid != null)
@@ -784,24 +838,14 @@ namespace KeePassHttp
         {
             PwEntry entry = null;
 
-            var configOpt = ConfigProviderFactory(host.CustomConfig);
-            if (configOpt.SearchInAllOpenedDatabases)
+            var configOpt = GetConfigProvider();
+            foreach (PwDatabase db in GetDatabases(configOpt))
             {
-                foreach (PwDocument doc in host.MainWindow.DocumentManager.Documents)
+                entry = db.RootGroup.FindEntry(uuid, true);
+                if (entry != null)
                 {
-                    if (doc.Database.IsOpen)
-                    {
-                        entry = doc.Database.RootGroup.FindEntry(uuid, true);
-                        if (entry != null)
-                        {
-                            break;
-                        }
-                    }
+                    break;
                 }
-            }
-            else
-            {
-                entry = host.Database.RootGroup.FindEntry(uuid, true);
             }
 
             if (entry == null)
@@ -868,7 +912,7 @@ namespace KeePassHttp
             string realm = null;
             if (r.Realm != null)
             {
-                realm = CryptoTransform(r.Realm, true, false, aes, CMode.DECRYPT);
+                realm = r.Realm.DecryptString(aes);
             }
 
             var root = host.Database.RootGroup;
@@ -883,7 +927,7 @@ namespace KeePassHttp
             string submithost = null;
             if (r.SubmitUrl != null)
             {
-                submithost = GetHost(CryptoTransform(r.SubmitUrl, true, false, aes, CMode.DECRYPT));
+                submithost = GetHost(r.SubmitUrl.DecryptString(aes));
             }
 
             string baseUrl = url;

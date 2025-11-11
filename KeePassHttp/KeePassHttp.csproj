@@ -58,6 +58,7 @@
     <Compile Include="ConfigOpt.cs" />
     <Compile Include="Abstraction\IConfigProvider.cs" />
     <Compile Include="Configuration\DefaultConfigProvider.cs" />
+    <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="OptionsForm.cs">
       <SubType>Form</SubType>
     </Compile>
