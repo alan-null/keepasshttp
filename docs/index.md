@@ -27,3 +27,14 @@ This plugin is primarily intended for use with [chromeIPass for Google Chrome](h
  * For Windows: Windows XP SP3 or higher
  * For Linux: installed mono
  * For Mac: installed mono - it seems to fully support KeePassHttp, but we cannot test it
+
+## Documentation & Versioning
+Latest release documentation is published here. Versioned snapshots reside in branches named `docs/{version}` (e.g. `docs/2.0.0.0`). The `master` branch reflects unreleased development changes.
+
+## Quick Navigation
+- Association flow: API > associate / test-associate
+- Retrieve entries: API > get-logins / get-logins-by-names / get-all-logins
+- Count matches: API > get-logins-count
+- Create or update: API > set-login
+- Generate passwords: API > generate-password
+- Field schema: API > Common Fields (see configuration notes)

@@ -7,9 +7,9 @@ has_toc: false
 
 # Protocol
 
-### A. New client or stale client (key not in database).
+## A. New or stale client (key absent)
 
-This is the only point at which an administrator snooping traffic will be able to steal encryption keys:
+This is the only phase where a network observer could capture the raw AES key (no prior shared secret). Minimize exposure by performing association locally.
 
 1. client sends "test-associate" with payload to server
 2. server sends fail response to client (cannot decrypt)

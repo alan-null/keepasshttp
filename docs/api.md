@@ -7,7 +7,7 @@ has_toc: false
 
 # API
 
-A little deeper into protocol
+Requests are JSON objects sent via HTTP POST to `http://localhost:19455/` with `Content-Type: application/json`. The cipher used for request field encryption is AES‑256‑CBC (32‑byte key). Fields listed below are unencrypted at transport level (HTTP); specific values inside requests are encrypted using the negotiated key + per‑request nonce.
 
 ### Generic HTTP request
 (based on packet sniffing and code analyssis)

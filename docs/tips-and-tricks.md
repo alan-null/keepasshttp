@@ -16,4 +16,4 @@ This is already implemented directly in KeePass.
 2. Check the option to use references for username and password:
 [<img src="https://raw.github.com/alan-null/keepasshttp/master/documentation/images/keepass-duplicate-entry-references.png" alt="mark checkbox references" width="300px" />](https://raw.github.com/alan-null/keepasshttp/master/documentation/images/keepass-duplicate-entry-references.png)
 
-3. You can change the title, URL and evertything of the copied entry, but not the username and password. These fields contain a _Reference Key_ which refers to the _master entry_ you copied from.
+3. You can change the title, URL and everything of the copied entry, but not the username and password. These fields contain a _Reference Key_ which refers to the _master entry_ you copied from.
