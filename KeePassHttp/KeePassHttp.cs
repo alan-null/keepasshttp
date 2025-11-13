@@ -1,31 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Threading;
-using System.Net;
-using System.Windows.Forms;
-using System.Security.Cryptography;
-
+﻿using KeePass.App.Configuration;
 using KeePass.Plugins;
 using KeePass.UI;
+using KeePass.Util.Spr;
+using KeePassHttp.Abstraction;
+using KeePassHttp.Configuration;
+using KeePassHttp.Model.Request;
+using KeePassHttp.Model.Response;
 using KeePassLib;
 using KeePassLib.Security;
-
 using Newtonsoft.Json;
-using KeePass.Util.Spr;
-using KeePassHttp.Configuration;
-using KeePass.App.Configuration;
-using KeePassHttp.Abstraction;
+using Newtonsoft.Json.Linq;
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Net;
+using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading;
+using System.Windows.Forms;
 
 namespace KeePassHttp
 {
-    internal delegate void RequestHandler(Request request, Response response, Aes aes);
-
     public enum CMode { ENCRYPT, DECRYPT }
     public sealed partial class KeePassHttpExt : Plugin
     {
-
         /// <summary>
         /// an arbitrarily generated uuid for the keepasshttp root entry
         /// </summary>
@@ -50,7 +49,6 @@ namespace KeePassHttp
         //private int HTTPS_PORT = DEFAULT_PORT + 1;
         private Thread httpThread;
         private volatile bool stopped = false;
-        Dictionary<string, RequestHandler> handlers = new Dictionary<string, RequestHandler>();
 
         internal static Func<AceCustomConfig, IConfigProvider> ConfigProviderFactory = CreateDefaultFactory();
 
@@ -237,7 +235,7 @@ namespace KeePassHttp
 
             var optionsMenu = new ToolStripMenuItem("KeePassHttp Options...");
             optionsMenu.Click += OnOptions_Click;
-            optionsMenu.Image = KeePassHttp.Properties.Resources.earth_lock;
+            optionsMenu.Image = Properties.Resources.earth_lock;
             //optionsMenu.Image = global::KeePass.Properties.Resources.B16x16_File_Close;
             this.host.MainWindow.ToolsMenu.DropDownItems.Add(optionsMenu);
 
@@ -245,15 +243,6 @@ namespace KeePassHttp
             {
                 try
                 {
-                    handlers.Add(Request.TEST_ASSOCIATE, TestAssociateHandler);
-                    handlers.Add(Request.ASSOCIATE, AssociateHandler);
-                    handlers.Add(Request.GET_LOGINS, GetLoginsHandler);
-                    handlers.Add(Request.GET_LOGINS_COUNT, GetLoginsCountHandler);
-                    handlers.Add(Request.GET_LOGINS_BY_NAMES, GetLoginsByNamesHandler);
-                    handlers.Add(Request.GET_ALL_LOGINS, GetAllLoginsHandler);
-                    handlers.Add(Request.SET_LOGIN, SetLoginHandler);
-                    handlers.Add(Request.GENERATE_PASSWORD, GeneratePassword);
-
                     listener = new HttpListener();
 
                     var configOpt = GetConfigProvider();
@@ -324,41 +313,61 @@ namespace KeePassHttp
 
             return JsonSerializer.Create(settings);
         }
-        private Response ProcessRequest(Request r, HttpListenerResponse resp)
-        {
-            string hash = host.Database.RootGroup.Uuid.ToHexString() + host.Database.RecycleBinUuid.ToHexString();
-            hash = GetSHA1(hash);
 
-            var response = new Response(r.RequestType, hash);
+        private BaseResponse ProcessRequest(BaseRequest r, HttpListenerResponse resp)
+        {
+            BaseResponse response = null;
 
             using (var aes = new AesManaged())
             {
                 aes.Mode = CipherMode.CBC;
                 aes.Padding = PaddingMode.PKCS7;
-                var validRequest = !string.IsNullOrEmpty(r.RequestType) && handlers.ContainsKey(r.RequestType);
-                if (validRequest)
+
+                try
                 {
-                    var handler = handlers[r.RequestType];
-                    try
+                    switch (r.RequestType)
                     {
-                        handler(r, response, aes);
-                    }
-                    catch (Exception e)
-                    {
-                        ShowNotification("***BUG*** " + e, (s, evt) => MessageBox.Show(host.MainWindow, e + ""));
-                        response.Error = e + "";
-                        resp.StatusCode = (int)HttpStatusCode.BadRequest;
+                        case RequestTypes.TEST_ASSOCIATE:
+                            response = TestAssociateHandler(r, aes);
+                            break;
+                        case RequestTypes.ASSOCIATE:
+                            response = AssociateHandler(r, aes);
+                            break;
+                        case RequestTypes.GET_LOGINS:
+                            response = GetLoginsHandler(r, aes);
+                            break;
+                        case RequestTypes.GET_LOGINS_COUNT:
+                            response = GetLoginsCountHandler(r, aes);
+                            break;
+                        case RequestTypes.GET_LOGINS_BY_NAMES:
+                            response = GetLoginsByNamesHandler(r, aes);
+                            break;
+                        case RequestTypes.GET_ALL_LOGINS:
+                            response = GetAllLoginsHandler(r, aes);
+                            break;
+                        case RequestTypes.SET_LOGIN:
+                            response = SetLoginHandler(r, aes);
+                            break;
+                        case RequestTypes.GENERATE_PASSWORD:
+                            response = GeneratePassword(r, aes);
+                            break;
+                        default:
+                            response = new ErrorResponse("Unknown command: " + r.RequestType) { RequestType = r.RequestType };
+                            resp.StatusCode = (int)HttpStatusCode.BadRequest;
+                            break;
                     }
                 }
-                else
+                catch (Exception e)
                 {
-                    response.Error = "Unknown command: " + r.RequestType;
+                    ShowNotification("***BUG*** " + e, (s, evt) => MessageBox.Show(host.MainWindow, e + ""));
+                    response = new ErrorResponse(e + "") { RequestType = r.RequestType };
                     resp.StatusCode = (int)HttpStatusCode.BadRequest;
                 }
             }
 
             return response;
         }
+
         private void RequestHandler(IAsyncResult r)
         {
             try
@@ -370,6 +379,7 @@ namespace KeePassHttp
                 MessageBox.Show(host.MainWindow, "RequestHandler failed: " + e);
             }
         }
+
         private void _RequestHandler(IAsyncResult r)
         {
             if (stopped)
@@ -382,38 +392,49 @@ namespace KeePassHttp
             var req = ctx.Request;
             var resp = ctx.Response;
 
-            var serializer = NewJsonSerializer();
-            Request request = null;
-
             resp.StatusCode = (int)HttpStatusCode.OK;
+
+            var serializer = NewJsonSerializer();
+            BaseRequest request = null;
+            BaseResponse response = null;
+
             using (var ins = new JsonTextReader(new StreamReader(req.InputStream)))
             {
                 try
                 {
-                    request = serializer.Deserialize<Request>(ins);
+                    var jo = JObject.Load(ins);
+                    request = BaseRequest.Factory(jo, serializer);
+                    if (request != null)
+                    {
+                        var errors = Validation.RequestValidator.Validate(request);
+                        if (errors.Count > 0)
+                        {
+                            resp.StatusCode = (int)HttpStatusCode.BadRequest;
+                            response = new ErrorResponse("Invalid request: " + string.Join("; ", errors)) { RequestType = request.RequestType };
+                        }
+                    }
+                }
+                catch (JsonReaderException e)
+                {
+                    resp.StatusCode = (int)HttpStatusCode.BadRequest;
+                    response = new ErrorResponse("Malformed JSON: " + e.Message);
                 }
                 catch (JsonSerializationException e)
                 {
-                    var buffer = Encoding.UTF8.GetBytes(e + "");
                     resp.StatusCode = (int)HttpStatusCode.BadRequest;
-                    resp.ContentLength64 = buffer.Length;
-                    resp.OutputStream.Write(buffer, 0, buffer.Length);
-                } // ignore, bad request
+                    response = new ErrorResponse("Invalid JSON: " + e.Message);
+                }
             }
 
             var db = host.Database;
-
             var configOpt = GetConfigProvider();
 
-            if (request != null && (configOpt.UnlockDatabaseRequest || request.TriggerUnlock == "true") && !db.IsOpen)
+            if (response == null && request != null && (configOpt.UnlockDatabaseRequest || request.TriggerUnlock == "true") && !db.IsOpen)
             {
-                host.MainWindow.Invoke((MethodInvoker)delegate
-                {
-                    host.MainWindow.EnsureVisibleForegroundWindow(true, true);
-                });
+                host.MainWindow.Invoke((MethodInvoker)delegate { host.MainWindow.EnsureVisibleForegroundWindow(true, true); });
 
                 // UnlockDialog not already opened
-                bool bNoDialogOpened = (KeePass.UI.GlobalWindowManager.WindowCount == 0);
+                bool bNoDialogOpened = (GlobalWindowManager.WindowCount == 0);
                 if (!db.IsOpen && bNoDialogOpened)
                 {
                     host.MainWindow.Invoke((MethodInvoker)delegate
@@ -423,31 +444,56 @@ namespace KeePassHttp
                 }
             }
 
-            if (request != null && db.IsOpen)
+            if (response == null)
             {
-                Response response = null;
-                if (request != null)
+                if (request != null && db.IsOpen)
                 {
                     response = ProcessRequest(request, resp);
                 }
-
-                resp.ContentType = "application/json";
-                var writer = new StringWriter();
-                if (response != null)
+                else
                 {
-                    serializer.Serialize(writer, response);
-                    var buffer = Encoding.UTF8.GetBytes(writer.ToString());
-                    resp.ContentLength64 = buffer.Length;
-                    resp.OutputStream.Write(buffer, 0, buffer.Length);
+                    resp.StatusCode = (int)HttpStatusCode.ServiceUnavailable;
+                    response = new ErrorResponse("Database locked") { RequestType = request.RequestType };
                 }
             }
-            else
+
+            SerializeAndSendResponse(request, response, resp, serializer);
+        }
+
+        private void SerializeAndSendResponse(BaseRequest req, BaseResponse response, HttpListenerResponse resp, JsonSerializer serializer)
+        {
+            if (response == null)
             {
-                resp.StatusCode = (int)HttpStatusCode.ServiceUnavailable;
+                resp.StatusCode = (int)HttpStatusCode.InternalServerError;
+                response = new ErrorResponse("Internal error");
             }
 
-            var outs = resp.OutputStream;
-            outs.Close();
+            // common metadata
+            if (host.Database != null && host.Database.RootGroup != null)
+            {
+                string hash = host.Database.RootGroup.Uuid.ToHexString() + host.Database.RecycleBinUuid.ToHexString();
+                response.Hash = GetSHA1(hash);
+            }
+
+            if (req != null && string.IsNullOrEmpty(response.RequestType))
+            {
+                response.RequestType = req.RequestType;
+            }
+
+            if (string.IsNullOrEmpty(response.Version))
+            {
+                Assembly assembly = Assembly.GetExecutingAssembly();
+                FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
+                response.Version = fvi.ProductVersion;
+            }
+
+            resp.ContentType = "application/json";
+            var writer = new StringWriter();
+            serializer.Serialize(writer, response);
+            var buffer = Encoding.UTF8.GetBytes(writer.ToString());
+            resp.ContentLength64 = buffer.Length;
+            resp.OutputStream.Write(buffer, 0, buffer.Length);
+            resp.OutputStream.Close();
             resp.Close();
         }
 
