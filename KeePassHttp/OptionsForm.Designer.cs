@@ -32,6 +32,10 @@
             this.okButton = new System.Windows.Forms.Button();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.labelInterface = new System.Windows.Forms.Label();
+            this.labelResults = new System.Windows.Forms.Label();
+            this.labelCleanup = new System.Windows.Forms.Label();
+            this.labelSorting = new System.Windows.Forms.Label();
             this.SortByUsernameRadioButton = new System.Windows.Forms.RadioButton();
             this.SortByTitleRadioButton = new System.Windows.Forms.RadioButton();
             this.hideExpiredCheckbox = new System.Windows.Forms.CheckBox();
@@ -104,6 +108,10 @@
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.labelInterface);
+            this.tabPage1.Controls.Add(this.labelResults);
+            this.tabPage1.Controls.Add(this.labelCleanup);
+            this.tabPage1.Controls.Add(this.labelSorting);
             this.tabPage1.Controls.Add(this.SortByUsernameRadioButton);
             this.tabPage1.Controls.Add(this.SortByTitleRadioButton);
             this.tabPage1.Controls.Add(this.hideExpiredCheckbox);
@@ -116,15 +124,55 @@
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(402, 497);
+            this.tabPage1.Size = new System.Drawing.Size(402, 472);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "General";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
+            // labelInterface
+            // 
+            this.labelInterface.AutoSize = true;
+            this.labelInterface.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelInterface.Location = new System.Drawing.Point(7, 6);
+            this.labelInterface.Name = "labelInterface";
+            this.labelInterface.Size = new System.Drawing.Size(62, 13);
+            this.labelInterface.TabIndex = 25;
+            this.labelInterface.Text = "Interface:";
+            // 
+            // labelResults
+            // 
+            this.labelResults.AutoSize = true;
+            this.labelResults.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelResults.Location = new System.Drawing.Point(7, 66);
+            this.labelResults.Name = "labelResults";
+            this.labelResults.Size = new System.Drawing.Size(53, 13);
+            this.labelResults.TabIndex = 24;
+            this.labelResults.Text = "Results:";
+            // 
+            // labelCleanup
+            // 
+            this.labelCleanup.AutoSize = true;
+            this.labelCleanup.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelCleanup.Location = new System.Drawing.Point(7, 235);
+            this.labelCleanup.Name = "labelCleanup";
+            this.labelCleanup.Size = new System.Drawing.Size(57, 13);
+            this.labelCleanup.TabIndex = 22;
+            this.labelCleanup.Text = "Cleanup:";
+            // 
+            // labelSorting
+            // 
+            this.labelSorting.AutoSize = true;
+            this.labelSorting.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelSorting.Location = new System.Drawing.Point(7, 170);
+            this.labelSorting.Name = "labelSorting";
+            this.labelSorting.Size = new System.Drawing.Size(51, 13);
+            this.labelSorting.TabIndex = 21;
+            this.labelSorting.Text = "Sorting:";
+            // 
             // SortByUsernameRadioButton
             // 
             this.SortByUsernameRadioButton.AutoSize = true;
-            this.SortByUsernameRadioButton.Location = new System.Drawing.Point(7, 147);
+            this.SortByUsernameRadioButton.Location = new System.Drawing.Point(14, 188);
             this.SortByUsernameRadioButton.Name = "SortByUsernameRadioButton";
             this.SortByUsernameRadioButton.Size = new System.Drawing.Size(171, 17);
             this.SortByUsernameRadioButton.TabIndex = 19;
@@ -135,28 +183,28 @@
             // SortByTitleRadioButton
             // 
             this.SortByTitleRadioButton.AutoSize = true;
-            this.SortByTitleRadioButton.Location = new System.Drawing.Point(7, 170);
+            this.SortByTitleRadioButton.Location = new System.Drawing.Point(14, 211);
             this.SortByTitleRadioButton.Name = "SortByTitleRadioButton";
             this.SortByTitleRadioButton.Size = new System.Drawing.Size(141, 17);
             this.SortByTitleRadioButton.TabIndex = 18;
             this.SortByTitleRadioButton.TabStop = true;
             this.SortByTitleRadioButton.Text = "Sort found entries by &title";
             this.SortByTitleRadioButton.UseVisualStyleBackColor = true;
-            //
+            // 
             // hideExpiredCheckbox
-            //
+            // 
             this.hideExpiredCheckbox.AutoSize = true;
-            this.hideExpiredCheckbox.Location = new System.Drawing.Point(7, 88);
+            this.hideExpiredCheckbox.Location = new System.Drawing.Point(14, 117);
             this.hideExpiredCheckbox.Name = "hideExpiredCheckbox";
-            this.hideExpiredCheckbox.Size = new System.Drawing.Size(256, 17);
+            this.hideExpiredCheckbox.Size = new System.Drawing.Size(152, 17);
             this.hideExpiredCheckbox.TabIndex = 17;
-            this.hideExpiredCheckbox.Text = "Don't return e&xpired entries";
+            this.hideExpiredCheckbox.Text = "Don\'t return e&xpired entries";
             this.hideExpiredCheckbox.UseVisualStyleBackColor = true;
-            //
+            // 
             // matchSchemesCheckbox
-            //
+            // 
             this.matchSchemesCheckbox.AutoSize = true;
-            this.matchSchemesCheckbox.Location = new System.Drawing.Point(7, 111);
+            this.matchSchemesCheckbox.Location = new System.Drawing.Point(14, 137);
             this.matchSchemesCheckbox.Name = "matchSchemesCheckbox";
             this.matchSchemesCheckbox.Size = new System.Drawing.Size(375, 30);
             this.matchSchemesCheckbox.TabIndex = 17;
@@ -169,7 +217,7 @@
             this.removePermissionsButton.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.removePermissionsButton.ImageAlign = System.Drawing.ContentAlignment.TopLeft;
-            this.removePermissionsButton.Location = new System.Drawing.Point(14, 239);
+            this.removePermissionsButton.Location = new System.Drawing.Point(14, 289);
             this.removePermissionsButton.Name = "removePermissionsButton";
             this.removePermissionsButton.Size = new System.Drawing.Size(372, 28);
             this.removePermissionsButton.TabIndex = 16;
@@ -180,7 +228,7 @@
             // unlockDatabaseCheckbox
             // 
             this.unlockDatabaseCheckbox.AutoSize = true;
-            this.unlockDatabaseCheckbox.Location = new System.Drawing.Point(7, 65);
+            this.unlockDatabaseCheckbox.Location = new System.Drawing.Point(14, 44);
             this.unlockDatabaseCheckbox.Name = "unlockDatabaseCheckbox";
             this.unlockDatabaseCheckbox.Size = new System.Drawing.Size(256, 17);
             this.unlockDatabaseCheckbox.TabIndex = 15;
@@ -191,7 +239,7 @@
             // 
             this.removeButton.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.removeButton.Location = new System.Drawing.Point(14, 205);
+            this.removeButton.Location = new System.Drawing.Point(14, 255);
             this.removeButton.Name = "removeButton";
             this.removeButton.Size = new System.Drawing.Size(372, 28);
             this.removeButton.TabIndex = 11;
@@ -202,7 +250,7 @@
             // credMatchingCheckbox
             // 
             this.credMatchingCheckbox.AutoSize = true;
-            this.credMatchingCheckbox.Location = new System.Drawing.Point(7, 29);
+            this.credMatchingCheckbox.Location = new System.Drawing.Point(14, 84);
             this.credMatchingCheckbox.Name = "credMatchingCheckbox";
             this.credMatchingCheckbox.Size = new System.Drawing.Size(238, 30);
             this.credMatchingCheckbox.TabIndex = 9;
@@ -213,7 +261,7 @@
             // credNotifyCheckbox
             // 
             this.credNotifyCheckbox.AutoSize = true;
-            this.credNotifyCheckbox.Location = new System.Drawing.Point(7, 6);
+            this.credNotifyCheckbox.Location = new System.Drawing.Point(14, 22);
             this.credNotifyCheckbox.Name = "credNotifyCheckbox";
             this.credNotifyCheckbox.Size = new System.Drawing.Size(267, 17);
             this.credNotifyCheckbox.TabIndex = 8;
@@ -490,5 +538,9 @@
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.CheckBox returnStringFieldsWithKphOnlyCheckBox;
+        private System.Windows.Forms.Label labelSorting;
+        private System.Windows.Forms.Label labelCleanup;
+        private System.Windows.Forms.Label labelResults;
+        private System.Windows.Forms.Label labelInterface;
     }
 }
