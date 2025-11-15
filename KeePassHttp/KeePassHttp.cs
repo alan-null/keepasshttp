@@ -91,7 +91,9 @@ namespace KeePassHttp
             return ConfigProviderFactory(host.CustomConfig);
         }
 
-        public override string UpdateUrl { get { return "https://raw.githubusercontent.com/alan-null/keepasshttp/refs/heads/master/latest-version.txt"; } }
+        private string update2 = "";
+
+        public override string UpdateUrl { get { return this.update2; } }
 
         private SearchParameters MakeSearchParameters()
         {
@@ -246,6 +248,8 @@ namespace KeePassHttp
                     listener = new HttpListener();
 
                     var configOpt = GetConfigProvider();
+
+                    update2 = HTTP_SCHEME + configOpt.ListenerHost + ":" + configOpt.ListenerPort.ToString() + "/version";
 
                     listener.Prefixes.Add(HTTP_SCHEME + configOpt.ListenerHost + ":" + configOpt.ListenerPort.ToString() + "/");
                     //listener.Prefixes.Add(HTTPS_PREFIX + HTTPS_PORT + "/");
