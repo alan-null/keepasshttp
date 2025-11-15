@@ -9,6 +9,9 @@ function Start-KeePassTest {
     if (-not $Environment.ContainsKey("KPH_AlwaysAllowUpdates")) {
         $Environment["KPH_AlwaysAllowUpdates"] = "1"
     }
+    if (-not $Environment.ContainsKey("KPH_ReceiveCredentialNotification")) {
+        $Environment["KPH_ReceiveCredentialNotification"] = "0"
+    }
 
     $envStrings = $Environment.GetEnumerator() | ForEach-Object { "$($_.Key)=$($_.Value)" }
     Write-Host "Starting KeePass test instance... @{$($envStrings -join '; ')}"

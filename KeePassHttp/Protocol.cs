@@ -6,6 +6,8 @@ using KeePass.Plugins;
 using System.Reflection;
 using System.Diagnostics;
 using KeePassLib;
+using KeePassHttp.Model.Request;
+using KeePassHttp.Model.Response;
 
 namespace KeePassHttp
 {
@@ -21,7 +23,7 @@ namespace KeePassHttp
             return System.Convert.FromBase64String(s);
         }
 
-        private bool VerifyRequest(Request r, Aes aes)
+        private bool VerifyRequest(BaseRequest r, Aes aes)
         {
             var entry = GetConfigEntry(false);
             if (entry == null)
@@ -38,7 +40,7 @@ namespace KeePassHttp
             return TestRequestVerifier(r, aes, s.ReadString());
         }
 
-        private bool TestRequestVerifier(Request r, Aes aes, string key)
+        private bool TestRequestVerifier(BaseRequest r, Aes aes, string key)
         {
             var success = false;
             var crypted = Decode64(r.Verifier);
@@ -59,7 +61,7 @@ namespace KeePassHttp
             return success;
         }
 
-        private void SetResponseVerifier(Response r, Aes aes)
+        private void SetResponseVerifier(BaseResponse r, Aes aes)
         {
             aes.GenerateIV();
             r.Nonce = Encode64(aes.IV);

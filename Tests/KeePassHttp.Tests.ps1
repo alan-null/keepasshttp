@@ -35,6 +35,37 @@ Describe "KeePassHttp protocol" {
             $r = Invoke-TestAssociate -Context $Context
             $r.Success | Should -BeTrue
         }
+
+        It "returns expected properties (RequestType, Success, Id, Version, Hash, Nonce, Verifier)" {
+            $r = Invoke-TestAssociate -Context $Context
+            $props = $r.PSObject.Properties.Name
+            $props.Count | Should -Be 7
+            $props | Should -Contain "RequestType"
+            $props | Should -Contain "Success"
+            $props | Should -Contain "Id"
+            $props | Should -Contain "Version"
+            $props | Should -Contain "Hash"
+            $props | Should -Contain "Nonce"
+            $props | Should -Contain "Verifier"
+        }
+
+        It "fails test-associate with missing Id" {
+            $p = New-VerifierPair -Context $Context
+            # omit Id to test server behavior
+            $body = @{
+                RequestType = "test-associate"
+                Nonce       = $p.Nonce
+                Verifier    = $p.Verifier
+            } | ConvertTo-Json
+            $response = Invoke-WebRequest -Uri $Context.Endpoint -Method Post -ContentType "application/json" -Body $body -SkipHttpErrorCheck
+            $response.StatusCode | Should -Be 200 # KeePassHttp returns 200 even for error responses - backward compatibility
+
+            $json = $response.Content | ConvertFrom-Json
+            $json.RequestType | Should -Be "test-associate"
+            $json.Success     | Should -BeFalse
+            $json.Version     | Should -Be '2.0.0.0'
+            $json.Hash        | Should -Be '000c8edde13701752405676e684b7570c13a9291'
+        }
     }
 
     Context "ASSOCIATE" {
@@ -326,7 +357,6 @@ Describe "KeePassHttp protocol" {
             $json.RequestType | Should -Be $requestType
             $json.Error       | Should -Be "Unknown command: $requestType"
             $json.Success     | Should -BeFalse
-            $json.Count       | Should -Be 0
         }
     }
 

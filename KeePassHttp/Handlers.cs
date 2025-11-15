@@ -19,6 +19,9 @@ using KeePassLib.Cryptography;
 using KeePass.Util.Spr;
 using KeePassHttp.Abstraction;
 using KeePassHttp.Extensions;
+using KeePassHttp.Model.Request;
+using KeePassHttp.Model;
+using KeePassHttp.Model.Response;
 
 namespace KeePassHttp
 {
@@ -80,24 +83,30 @@ namespace KeePassHttp
             return listDatabases;
         }
 
-        private void GetAllLoginsHandler(Request r, Response resp, Aes aes)
+        private BaseResponse GetAllLoginsHandler(BaseRequest br, Aes aes)
         {
-            if (!VerifyRequest(r, aes))
+            if (!VerifyRequest(br, aes))
             {
-                return;
+                return new ErrorResponse { RequestType = RequestTypes.GET_ALL_LOGINS, Error = "Couldn't verify request" };
             }
 
-            var root = host.Database.RootGroup;
+            var resp = new GetAllLoginsResponse();
+            var r = br as GetAllLoginsRequest;
 
-            var list = root.GetEntries(true);
-
+            var list = host.Database.RootGroup.GetEntries(true);
             var config = GetConfigProvider();
 
             CompleteGetLoginsResult(list.Select(p => new PwEntryDatabase(p, host.Database)), config, resp, r.Id, null, aes);
+            return resp;
         }
 
-        private List<PwEntryDatabase> FindMatchingEntries(Request r, Aes aes)
+        private List<PwEntryDatabase> FindMatchingEntries(EntryQuery r, Aes aes)
         {
+            if (r == null)
+            {
+                return new List<PwEntryDatabase>();
+            }
+
             string submitHost = null;
             string realm = null;
 
@@ -318,26 +327,34 @@ namespace KeePassHttp
             catch { return ""; }
         }
 
-        private void GetLoginsCountHandler(Request r, Response resp, Aes aes)
+        private BaseResponse GetLoginsCountHandler(BaseRequest br, Aes aes)
         {
-            if (!VerifyRequest(r, aes))
+            if (!VerifyRequest(br, aes))
             {
-                return;
+                return new ErrorResponse { RequestType = RequestTypes.GET_LOGINS_COUNT, Error = "Couldn't verify request" };
             }
+
+            var resp = new GetLoginsCountResponse();
+            var r = br as GetLoginsCountRequest;
 
             resp.Success = true;
             resp.Id = r.Id;
-            var items = FindMatchingEntries(r, aes);
+            var items = FindMatchingEntries(new EntryQuery { Url = r.Url }, aes);
             SetResponseVerifier(resp, aes);
             resp.Count = items.Count;
+            return resp;
         }
 
-        private void GetLoginsHandler(Request r, Response resp, Aes aes)
+        private BaseResponse GetLoginsHandler(BaseRequest br, Aes aes)
         {
-            if (!VerifyRequest(r, aes))
+
+            if (!VerifyRequest(br, aes))
             {
-                return;
+                return new ErrorResponse { RequestType = RequestTypes.GET_LOGINS, Error = "Couldn't verify request" };
             }
+
+            var resp = new GetLoginsResponse();
+            var r = br as GetLoginsRequest;
 
             string submitHost = null;
             var host = GetHost(r.Url.DecryptString(aes));
@@ -346,13 +363,13 @@ namespace KeePassHttp
                 submitHost = GetHost(r.SubmitUrl.DecryptString(aes));
             }
 
-            var itemsList = FindMatchingEntries(r, aes);
+            var itemsList = FindMatchingEntries(new EntryQuery { SubmitUrl = r.SubmitUrl, Url = r.Url, Realm = r.Realm }, aes);
             if (itemsList.Count == 0)
             {
                 resp.Success = true;
                 resp.Id = r.Id;
                 SetResponseVerifier(resp, aes);
-                return;
+                return resp;
             }
 
             var configOpt = GetConfigProvider();
@@ -432,7 +449,7 @@ namespace KeePassHttp
                 resp.Success = true;
                 resp.Id = r.Id;
                 SetResponseVerifier(resp, aes);
-                return;
+                return resp;
             }
 
             string compareToUrl = (r.SubmitUrl != null ? r.SubmitUrl.DecryptString(aes) : r.Url.DecryptString(aes)).ToLowerInvariant();
@@ -456,19 +473,18 @@ namespace KeePassHttp
             }
 
             CompleteGetLoginsResult(itemsList, configOpt, resp, r.Id, host, aes);
+            return resp;
         }
 
-        private void GetLoginsByNamesHandler(Request r, Response resp, Aes aes)
+        private BaseResponse GetLoginsByNamesHandler(BaseRequest br, Aes aes)
         {
-            if (!VerifyRequest(r, aes))
+            if (!VerifyRequest(br, aes))
             {
-                return;
+                return new ErrorResponse { RequestType = RequestTypes.GET_LOGINS_BY_NAMES, Error = "Couldn't verify request" };
             }
 
-            if (r.Names == null)
-            {
-                return;
-            }
+            var resp = new GetLoginsByNameResponse();
+            var r = br as GetLoginsByNamesRequest;
 
             var decryptedNames = new HashSet<string>();
             foreach (string name in r.Names.Where(n => n != null))
@@ -494,9 +510,10 @@ namespace KeePassHttp
             }
 
             CompleteGetLoginsResult(listEntries, configOpt, resp, r.Id, null, aes);
+            return resp;
         }
 
-        private void CompleteGetLoginsResult(IEnumerable<PwEntryDatabase> itemsList, IConfigProvider configOpt, Response resp, string rId, string host, Aes aes)
+        private void CompleteGetLoginsResult(IEnumerable<PwEntryDatabase> itemsList, IConfigProvider configOpt, EntriesResponse resp, string rId, string host, Aes aes)
         {
             var paired = itemsList.Select(ed => new { ed.MatchDistance, Resp = PrepareElementForResponseEntries(configOpt, ed) }).ToList();
 
@@ -665,26 +682,24 @@ namespace KeePassHttp
             property = property.EncryptString(aes);
         }
 
-        private void SetLoginHandler(Request r, Response resp, Aes aes)
+        private BaseResponse SetLoginHandler(BaseRequest br, Aes aes)
         {
-            if (!VerifyRequest(r, aes))
+            if (!VerifyRequest(br, aes))
             {
-                return;
+                return new ErrorResponse { RequestType = RequestTypes.SET_LOGIN, Error = "Couldn't verify request" };
             }
+
+            var resp = new SetLoginResponse();
+            var r = br as SetLoginRequest;
 
             string url = r.Url.DecryptString(aes);
             var urlHost = GetHost(url);
-
             PwUuid uuid = null;
-            string username, password;
-
-            username = r.Login.DecryptString(aes);
-            password = r.Password.DecryptString(aes);
-
+            string username = r.Login.DecryptString(aes);
+            string password = r.Password.DecryptString(aes);
             if (r.Uuid != null)
             {
-                uuid = new PwUuid(MemUtil.HexStringToByteArray(
-                        r.Uuid.DecryptString(aes)));
+                uuid = new PwUuid(MemUtil.HexStringToByteArray(r.Uuid.DecryptString(aes)));
             }
 
             if (uuid != null)
@@ -695,18 +710,24 @@ namespace KeePassHttp
             else
             {
                 // create new entry
-                resp.Success = CreateEntry(username, password, urlHost, url, r, aes);
+                var model = new CreateEntryModel { Username = username, Password = password, Url = url, Title = urlHost, Realm = r.Realm, SubmitUrl = r.SubmitUrl };
+                resp.Success = CreateEntry(model, aes);
             }
 
             resp.Id = r.Id;
             SetResponseVerifier(resp, aes);
+            return resp;
         }
 
-        private void AssociateHandler(Request r, Response resp, Aes aes)
+        private BaseResponse AssociateHandler(BaseRequest br, Aes aes)
         {
+            var resp = new AssociateResponse();
+
+            var r = br as AssociateRequest;
+
             if (!TestRequestVerifier(r, aes, r.Key))
             {
-                return;
+                return resp;
             }
 
             // key is good, prompt user to save
@@ -767,26 +788,40 @@ namespace KeePassHttp
                     }
                 });
             }
+
+            return resp;
         }
 
-        private void TestAssociateHandler(Request r, Response resp, Aes aes)
+        private BaseResponse TestAssociateHandler(BaseRequest br, Aes aes)
         {
-            if (!VerifyRequest(r, aes))
+            if (!VerifyRequest(br, aes))
             {
-                return;
+                // invalid request - backwards compatibility: if Id is undefined
+                var error = "Couldn't verify request";
+                if (br.Id.Equals(Constants.UndefinedKeyPlaceholder))
+                {
+                    error = "Missing key identifier (Id)";
+                }
+                return new ErrorResponse { RequestType = RequestTypes.TEST_ASSOCIATE, Error = error };
             }
 
+            var r = br as TestAssociateRequest;
+            var resp = new TestAssociateResponse();
             resp.Success = true;
             resp.Id = r.Id;
             SetResponseVerifier(resp, aes);
+            return resp;
         }
 
-        private void GeneratePassword(Request r, Response resp, Aes aes)
+        private BaseResponse GeneratePassword(BaseRequest br, Aes aes)
         {
-            if (!VerifyRequest(r, aes))
+            if (!VerifyRequest(br, aes))
             {
-                return;
+                return new ErrorResponse { RequestType = RequestTypes.GENERATE_PASSWORD, Error = "Couldn't verify request" };
             }
+
+            var resp = new GeneratePasswordResponse();
+            var r = br as GeneratePasswordRequest;
 
             byte[] pbEntropy = null;
             ProtectedString psNew;
@@ -797,7 +832,7 @@ namespace KeePassHttp
             if (pbNew != null)
             {
                 uint uBits = QualityEstimation.EstimatePasswordBits(pbNew);
-                ResponseEntry item = new ResponseEntry(Request.GENERATE_PASSWORD, uBits.ToString(), StrUtil.Utf8.GetString(pbNew), Request.GENERATE_PASSWORD, null);
+                ResponseEntry item = new ResponseEntry(RequestTypes.GENERATE_PASSWORD, uBits.ToString(), StrUtil.Utf8.GetString(pbNew), RequestTypes.GENERATE_PASSWORD, null);
                 resp.Entries.Add(item);
                 resp.Success = true;
                 resp.Count = 1;
@@ -808,6 +843,7 @@ namespace KeePassHttp
             SetResponseVerifier(resp, aes);
 
             EncryptResponseEntries(resp.Entries, aes);
+            return resp;
         }
 
         private KeePassHttpEntryConfig GetEntryConfig(PwEntry e)
@@ -907,12 +943,12 @@ namespace KeePassHttp
             return false;
         }
 
-        private bool CreateEntry(string username, string password, string urlHost, string url, Request r, Aes aes)
+        private bool CreateEntry(CreateEntryModel model, Aes aes)
         {
             string realm = null;
-            if (r.Realm != null)
+            if (model.Realm != null)
             {
-                realm = r.Realm.DecryptString(aes);
+                realm = model.Realm.DecryptString(aes);
             }
 
             var root = host.Database.RootGroup;
@@ -923,14 +959,13 @@ namespace KeePassHttp
                 root.AddGroup(group, true);
                 UpdateUI(null);
             }
-
             string submithost = null;
-            if (r.SubmitUrl != null)
+            if (model.SubmitUrl != null)
             {
-                submithost = GetHost(r.SubmitUrl.DecryptString(aes));
+                submithost = GetHost(model.SubmitUrl.DecryptString(aes));
             }
 
-            string baseUrl = url;
+            string baseUrl = model.Url;
             // index bigger than https:// <-- this slash
             if (baseUrl.LastIndexOf("/") > 9)
             {
@@ -938,12 +973,12 @@ namespace KeePassHttp
             }
 
             PwEntry entry = new PwEntry(true, true);
-            entry.Strings.Set(PwDefs.TitleField, new ProtectedString(false, urlHost));
-            entry.Strings.Set(PwDefs.UserNameField, new ProtectedString(false, username));
-            entry.Strings.Set(PwDefs.PasswordField, new ProtectedString(true, password));
+            entry.Strings.Set(PwDefs.TitleField, new ProtectedString(false, model.Title));
+            entry.Strings.Set(PwDefs.UserNameField, new ProtectedString(false, model.Username));
+            entry.Strings.Set(PwDefs.PasswordField, new ProtectedString(true, model.Password));
             entry.Strings.Set(PwDefs.UrlField, new ProtectedString(true, baseUrl));
 
-            if ((submithost != null && urlHost != submithost) || realm != null)
+            if ((submithost != null && model.Title != submithost) || realm != null)
             {
                 var config = new KeePassHttpEntryConfig();
                 if (submithost != null)
