@@ -1,0 +1,77 @@
+---
+layout: default
+title: Changelog
+nav_order: 8
+toc_title: "Versions:"
+---
+
+# Changelog
+All notable changes to this project will be documented in this file.
+
+## [Unreleased]
+{: .d-inline-block }
+Coming soon
+{: .label .label-yellow }
+
+### Added
+
+- Integration tests for all API endpoints ([#9])
+- Abstraction layer for configuration testing ([#10] [#12] [#13])
+- Possibility to get "group" name when listing credentials ([#7])
+- Add issue templates for bug reports and feature requests ([#16])
+- Add new handler `get-logins-by-names` ([#18])
+- New endpoint `GET /version` to retrieve current plugin version.
+- Create documentation page ([#23])
+- UI label and tooltip for Options window
+- CheckUpdates configuration option ([#28])
+
+### Fixed
+
+- The `get-all-logins` function does not return all available logins ([#11])
+- The `get-all-logins` function does not sort results ([#14])
+- Exception for unknown handler ([#15])
+- set-login return incorrect status ([#17])
+- Fix inconsistency in `get*logins` handlers ([#20])
+
+### Changed
+
+- Refactor code for improved readability and maintainability ([#21])
+- Refactor and enhance Request/Response models ([#27])
+
+## [v2.0.0.0]
+{: .d-inline-block }
+Stable
+{: .label .label-green }
+
+### Fixed
+- Update check failed: version information file could not be downloaded ([#1])
+
+
+## [v1.8.4.2]
+
+### Notes
+- Legacy release of **KeePassHttp** by [Perry Nguyen].
+
+<!-- versions -->
+[unreleased]: https://github.com/alan-null/keepasshttp/compare/v2.0.0.0...HEAD
+[v2.0.0.0]: https://github.com/alan-null/keepasshttp/compare/v1.8.4.2...v2.0.0.0
+[v1.8.4.2]: https://github.com/alan-null/keepasshttp/compare/v1.8.4.2...v1.8.4.2
+
+<!-- issues -->
+[#28]: https://github.com/alan-null/keepasshttp/issues/28
+[#27]: https://github.com/alan-null/keepasshttp/issues/27
+[#23]: https://github.com/alan-null/keepasshttp/issues/23
+[#21]: https://github.com/alan-null/keepasshttp/issues/21
+[#20]: https://github.com/alan-null/keepasshttp/issues/20
+[#18]: https://github.com/alan-null/keepasshttp/issues/18
+[#17]: https://github.com/alan-null/keepasshttp/issues/17
+[#16]: https://github.com/alan-null/keepasshttp/issues/16
+[#15]: https://github.com/alan-null/keepasshttp/issues/15
+[#14]: https://github.com/alan-null/keepasshttp/issues/14
+[#13]: https://github.com/alan-null/keepasshttp/issues/13
+[#12]: https://github.com/alan-null/keepasshttp/issues/12
+[#11]: https://github.com/alan-null/keepasshttp/issues/11
+[#10]: https://github.com/alan-null/keepasshttp/issues/10
+[#9]: https://github.com/alan-null/keepasshttp/issues/9
+[#7]: https://github.com/alan-null/keepasshttp/issues/7
+[#1]: https://github.com/alan-null/keepasshttp/issues/1
