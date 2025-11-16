@@ -140,6 +140,23 @@ function Invoke-GetLoginsByName {
     Invoke-RestMethod -Uri $Context.Endpoint -Method Post -ContentType "application/json" -Body $json
 }
 
+function Invoke-GetLoginByUuid {
+    param(
+        [Parameter(Mandatory)][psobject]$Context,
+        [Parameter(Mandatory)][string]$Uuid
+    )
+
+    $p = New-VerifierPair -Context $Context
+    $body = @{
+        RequestType = "get-login-by-uuid"
+        Id          = $Context.Id
+        Nonce       = $p.Nonce
+        Verifier    = $p.Verifier
+        Uuid        = Protect-Field -Context $Context -PlainText $Uuid -Nonce $p.Nonce
+    } | ConvertTo-Json
+    Invoke-RestMethod -Uri $Context.Endpoint -Method Post -ContentType "application/json" -Body $body
+}
+
 function Invoke-GetLoginsCount {
     param(
         [Parameter(Mandatory)][psobject]$Context,
@@ -213,5 +230,5 @@ function Invoke-SetLogin {
 
 Export-ModuleMember -Function `
     New-KphContext, New-Nonce, New-VerifierPair, `
-    Invoke-TestAssociate, Invoke-GetLogins, Invoke-GetLoginsByName, Invoke-GetLoginsCount, Invoke-GetAllLogins, Invoke-GeneratePassword, Invoke-SetLogin, `
+    Invoke-TestAssociate, Invoke-GetLogins, Invoke-GetLoginsByName, Invoke-GetLoginByUuid, Invoke-GetLoginsCount, Invoke-GetAllLogins, Invoke-GeneratePassword, Invoke-SetLogin, `
     Protect-Field, Unprotect-Field

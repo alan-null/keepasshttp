@@ -351,6 +351,9 @@ namespace KeePassHttp
                         case RequestTypes.GET_LOGINS_BY_NAMES:
                             response = GetLoginsByNamesHandler(r, aes);
                             break;
+                        case RequestTypes.GET_LOGIN_BY_UUID:
+                            response = GetLoginByUuidHandler(r, aes);
+                            break;
                         case RequestTypes.GET_ALL_LOGINS:
                             response = GetAllLoginsHandler(r, aes);
                             break;

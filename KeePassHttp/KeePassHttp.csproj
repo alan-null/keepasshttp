@@ -59,8 +59,10 @@
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Model\CreateEntryModel.cs.cs" />
     <Compile Include="Model\EntryQuery.cs" />
+    <Compile Include="Model\Request\GetLoginByUuidRequest.cs" />
     <Compile Include="Model\Response\GeneratePasswordResponse.cs" />
     <Compile Include="Model\Response\GetAllLoginsResponse.cs" />
+    <Compile Include="Model\Response\GetLoginByUuidResponse.cs" />
     <Compile Include="Model\Response\GetLoginsByNameResponse.cs" />
     <Compile Include="Model\Response\GetLoginsCountResponse.cs" />
     <Compile Include="Model\Response\AssociateResponse.cs" />

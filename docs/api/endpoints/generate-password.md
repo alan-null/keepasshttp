@@ -2,7 +2,7 @@
 layout: default
 title: generate-password
 parent: Endpoints
-nav_order: 8
+nav_order: 9
 ---
 
 # generate-password

@@ -8,6 +8,16 @@ toc_title: "Versions:"
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+{: .d-inline-block }
+Coming soon
+{: .label .label-yellow }
+
+### Added
+
+- Add new handler `get-login-by-uuid` ([#30])
+
+
 ## [v2.1.0.0]
 {: .d-inline-block }
 Latest
@@ -61,6 +71,7 @@ Latest
 [v1.8.4.2]: https://github.com/alan-null/keepasshttp/compare/v1.8.4.2...v1.8.4.2
 
 <!-- issues -->
+[#30]: https://github.com/alan-null/keepasshttp/issues/30
 [#29]: https://github.com/alan-null/keepasshttp/issues/29
 [#28]: https://github.com/alan-null/keepasshttp/issues/28
 [#27]: https://github.com/alan-null/keepasshttp/issues/27

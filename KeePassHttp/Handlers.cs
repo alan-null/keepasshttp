@@ -513,6 +513,35 @@ namespace KeePassHttp
             return resp;
         }
 
+        private BaseResponse GetLoginByUuidHandler(BaseRequest br, Aes aes)
+        {
+            if (!VerifyRequest(br, aes))
+            {
+                return new ErrorResponse { RequestType = RequestTypes.GET_LOGIN_BY_UUID, Error = "Couldn't verify request" };
+            }
+
+            var response = new GetLoginByUuidResponse();
+            var request = br as GetLoginByUuidRequest;
+
+            var uuid = new PwUuid(MemUtil.HexStringToByteArray(request.Uuid.DecryptString(aes)));
+
+            var listEntries = new List<PwEntryDatabase>();
+            var configOpt = GetConfigProvider();
+
+            foreach (PwDatabase db in GetDatabases(configOpt))
+            {
+                var entry = db.RootGroup.FindEntry(uuid, true);
+                if (entry != null)
+                {
+                    listEntries.Add(new PwEntryDatabase(entry, db));
+                    break;
+                }
+            }
+
+            CompleteGetLoginsResult(listEntries, configOpt, response, request.Id, null, aes);
+            return response;
+        }
+
         private void CompleteGetLoginsResult(IEnumerable<PwEntryDatabase> itemsList, IConfigProvider configOpt, EntriesResponse resp, string rId, string host, Aes aes)
         {
             var paired = itemsList.Select(ed => new { ed.MatchDistance, Resp = PrepareElementForResponseEntries(configOpt, ed) }).ToList();

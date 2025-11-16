@@ -204,6 +204,27 @@ Describe "KeePassHttp protocol" {
         }
     }
 
+    Context "GET_LOGIN_BY_UUID" {
+        It "returns single entry for exact uuid" {
+            $r = Invoke-GetLoginByUuid -Context $Context -Uuid '8AA5E1EDD5D6F0408DA96064C6710B9B'
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 1
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[0].Name -Nonce $r.Nonce) | Should -Be "ABC"
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[0].Login -Nonce $r.Nonce) | Should -Be "user1"
+        }
+
+        It "returns expected entry properties: Login, Uuid, Name, Password, Group" {
+            $r = Invoke-GetLoginByUuid -Context $Context -Uuid '8AA5E1EDD5D6F0408DA96064C6710B9B'
+            $props = $r.Entries[0].PSObject.Properties.Name
+            $props.Count | Should -Be 5
+            $props | Should -Contain "Login"
+            $props | Should -Contain "Uuid"
+            $props | Should -Contain "Name"
+            $props | Should -Contain "Password"
+            $props | Should -Contain "Group"
+        }
+    }
+
     Context "GET_LOGINS_COUNT" {
         It "get-logins-count equals get-logins count for google.com" {
             $logins = Invoke-GetLogins -Context $Context -Url "http://www.google.com/"

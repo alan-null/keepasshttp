@@ -2,7 +2,7 @@
 layout: default
 title: get-all-logins
 parent: Endpoints
-nav_order: 6
+nav_order: 7
 ---
 
 # get-all-logins

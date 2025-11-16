@@ -45,6 +45,7 @@ namespace KeePassHttp.Model.Request
                 case RequestTypes.GET_LOGINS: request = new GetLoginsRequest(); break;
                 case RequestTypes.GET_LOGINS_COUNT: request = new GetLoginsCountRequest(); break;
                 case RequestTypes.GET_LOGINS_BY_NAMES: request = new GetLoginsByNamesRequest(); break;
+                case RequestTypes.GET_LOGIN_BY_UUID: request = new GetLoginByUuidRequest(); break;
                 case RequestTypes.GET_ALL_LOGINS: request = new GetAllLoginsRequest(); break;
                 case RequestTypes.SET_LOGIN: request = new SetLoginRequest(); break;
                 case RequestTypes.ASSOCIATE: request = new AssociateRequest(); break;
