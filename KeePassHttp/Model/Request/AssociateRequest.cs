@@ -11,5 +11,15 @@ namespace KeePassHttp.Model.Request
         /// </summary>
         [JsonProperty, Required]
         public string Key { get; set; }
+
+        public AssociateRequest()
+        {
+            // backward compatibility
+            // if 'Id' is missing or empty, set it to "UndefinedKeyPlaceholder" to match previous behavior and pass validation ('Required' attribute)
+            if (string.IsNullOrWhiteSpace(Id))
+            {
+                Id = Constants.UndefinedKeyPlaceholder;
+            }
+        }
     }
 }

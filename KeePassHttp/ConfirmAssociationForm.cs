@@ -35,15 +35,28 @@ namespace KeePassHttp
         }
 
         public bool Saved { get; private set; }
+
         public string Key
         {
             get
-            { 
+            {
                 return KeyLabel.Text;
             }
             set
             {
                 KeyLabel.Text = value;
+            }
+        }
+
+        public string KeyNameText
+        {
+            get
+            {
+                return KeyName.Text;
+            }
+            set
+            {
+                KeyName.Text = value;
             }
         }
     }

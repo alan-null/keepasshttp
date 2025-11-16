@@ -19,6 +19,7 @@ See [common-fields](../common-fields).
 | Field         | Description                                        | Required |
 | :------------ | :------------------------------------------------- | :------- |
 | `RequestType` | "associate"                                        | Yes      |
+| `Id`          | Key identifier stored in database                  | Optional |
 | `Key`         | Base64 AES key (32 bytes recommended)              | Yes      |
 | `Nonce`       | 16-byte Base64 random (IV + challenge)             | Yes      |
 | `Verifier`    | `Nonce` encrypted with `Key` (AES-CBC, IV=`Nonce`) | Yes      |
@@ -35,8 +36,6 @@ See [common-fields](../common-fields).
 
 # Response
 
-`Entries` unused; `Count` always 0.
-
 See [common-fields](../common-fields#response-envelope) for the common response envelope.
 
 ### Successful Response:
@@ -45,7 +44,6 @@ See [common-fields](../common-fields#response-envelope) for the common response 
   "RequestType": "associate",
   "Success": true,
   "Id": "client1",
-  "Count": 0,
   "Version": "2.0.0.0",
   "Hash": "000c8edde13701752405676e684b7570c13a9291",
   "Nonce": "g4fYGDSufIbtEUGsuHvFcA==",
@@ -58,7 +56,6 @@ See [common-fields](../common-fields#response-envelope) for the common response 
 {
   "RequestType": "associate",
   "Success": false,
-  "Count": 0,
   "Version": "2.0.0.0",
   "Hash": "000c8edde13701752405676e684b7570c13a9291"
 }

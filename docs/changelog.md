@@ -24,6 +24,7 @@ Coming soon
 - Create documentation page ([#23])
 - UI label and tooltip for Options window
 - CheckUpdates configuration option ([#28])
+- Ability to define key **Id** for `associate` requests ([#29])
 
 ### Fixed
 
@@ -58,6 +59,7 @@ Stable
 [v1.8.4.2]: https://github.com/alan-null/keepasshttp/compare/v1.8.4.2...v1.8.4.2
 
 <!-- issues -->
+[#29]: https://github.com/alan-null/keepasshttp/issues/29
 [#28]: https://github.com/alan-null/keepasshttp/issues/28
 [#27]: https://github.com/alan-null/keepasshttp/issues/27
 [#23]: https://github.com/alan-null/keepasshttp/issues/23

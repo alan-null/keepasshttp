@@ -739,6 +739,7 @@ namespace KeePassHttp
                     f.Activate();
                     f.Icon = win.Icon;
                     f.Key = r.Key;
+                    f.KeyNameText = r.Id.Equals(Constants.UndefinedKeyPlaceholder) ? string.Empty : r.Id;
                     f.Load += delegate { f.Activate(); };
                     f.ShowDialog(win);
 
