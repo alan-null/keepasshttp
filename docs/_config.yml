@@ -15,3 +15,5 @@ callouts:
   warning:
     title: Warning
     color: red
+  highlight:
+    color: yellow

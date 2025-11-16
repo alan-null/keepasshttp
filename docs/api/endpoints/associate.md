@@ -6,6 +6,9 @@ nav_order: 1
 ---
 
 # associate
+{: .d-inline-block }
+POST
+{: .label .label-yellow }
 
 Establishes a trust relationship by registering a client-supplied **AES** key under a user-chosen `Id`.
 The server (plugin) validates that the client controls the key by checking the `Verifier` (`Nonce` encrypted with the provided `Key`).

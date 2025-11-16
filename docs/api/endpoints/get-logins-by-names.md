@@ -6,6 +6,10 @@ nav_order: 5
 ---
 
 # get-logins-by-names
+{: .d-inline-block }
+POST
+{: .label .label-yellow }
+
 Returns entries whose **Title** matches any encrypted name. See [common-fields](../common-fields).
 
 # Request
@@ -74,9 +78,9 @@ See [common-fields](../common-fields#response-envelope) for the common response 
 ### Failure Response:
 ```json
 {
+  "Error": "Exception message describing the failure",
   "RequestType": "get-logins-by-names",
   "Success": false,
-  "Count": 0,
   "Version": "x.y.z",
   "Hash": "dbHashSha1"
 }

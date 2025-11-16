@@ -6,6 +6,9 @@ nav_order: 3
 ---
 
 # get-logins
+{: .d-inline-block }
+POST
+{: .label .label-yellow }
 
 Returns matching credentials for a form (optional submit URL / realm). See [common-fields](../common-fields).
 
@@ -69,6 +72,7 @@ See [common-fields](../common-fields#response-envelope) for the common response 
 ### Failure Response (verifier / id issue):
 ```json
 {
+  "Error": "Exception message describing the failure",
   "RequestType": "get-logins",
   "Success": false,
   "Count": 0,

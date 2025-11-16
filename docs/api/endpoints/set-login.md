@@ -6,6 +6,10 @@ nav_order: 7
 ---
 
 # set-login
+{: .d-inline-block }
+POST
+{: .label .label-yellow }
+
 Creates or updates an entry. See [common-fields](../common-fields).
 
 # Request
@@ -49,7 +53,6 @@ See [common-fields](../common-fields#response-envelope) for the common response 
   "RequestType": "set-login",
   "Success": true,
   "Id": "client1",
-  "Count": 0,
   "Nonce": "RespNonce==",
   "Verifier": "EncryptedRespNonce==",
   "Version": "x.y.z",
@@ -60,6 +63,7 @@ See [common-fields](../common-fields#response-envelope) for the common response 
 ### Failure:
 ```json
 {
+  "Error": "Error message describing the failure",
   "RequestType": "set-login",
   "Success": false,
   "Version": "x.y.z",

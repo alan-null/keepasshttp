@@ -6,6 +6,10 @@ nav_order: 6
 ---
 
 # get-all-logins
+{: .d-inline-block }
+POST
+{: .label .label-yellow }
+
 Returns every non-expired entry. See [common-fields](../common-fields).
 
 # Request
@@ -60,9 +64,9 @@ See [common-fields](../common-fields#response-envelope) for the common response 
 ### Failure Response:
 ```json
 {
+  "Error": "Exception message describing the failure",
   "RequestType": "get-all-logins",
   "Success": false,
-  "Count": 0,
   "Version": "x.y.z",
   "Hash": "dbHashSha1"
 }

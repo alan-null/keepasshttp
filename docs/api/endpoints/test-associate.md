@@ -6,6 +6,10 @@ nav_order: 2
 ---
 
 # test-associate
+{: .d-inline-block }
+POST
+{: .label .label-yellow }
+
 Verifies an existing association. See [common-fields](../common-fields).
 
 # Request
@@ -39,7 +43,6 @@ See [common-fields](../common-fields#response-envelope) for the common response 
   "RequestType": "test-associate",
   "Success": true,
   "Id": "client1",
-  "Count": 0,
   "Version": "x.y.z",
   "Hash": "dbHashSha1",
   "Nonce": "RespNonce==",
@@ -50,9 +53,9 @@ See [common-fields](../common-fields#response-envelope) for the common response 
 ### Failure:
 ```json
 {
+  "Error": "Exception message describing the failure",
   "RequestType": "test-associate",
   "Success": false,
-  "Count": 0,
   "Version": "x.y.z",
   "Hash": "dbHashSha1"
 }

@@ -6,6 +6,10 @@ nav_order: 8
 ---
 
 # generate-password
+{: .d-inline-block }
+POST
+{: .label .label-yellow }
+
 Generates a password (not persisted). See [common-fields](../common-fields).
 
 # Request
@@ -57,9 +61,9 @@ See [common-fields](../common-fields#response-envelope) for the common response 
 ### Failure:
 ```json
 {
+  "Error": "Error message describing the failure",
   "RequestType": "generate-password",
   "Success": false,
-  "Count": 0,
   "Version": "x.y.z",
   "Hash": "dbHashSha1"
 }

@@ -6,6 +6,10 @@ nav_order: 4
 ---
 
 # get-logins-count
+{: .d-inline-block }
+POST
+{: .label .label-yellow }
+
 Returns only a match count. See [common-fields](../common-fields).
 
 # Request
@@ -53,9 +57,9 @@ See [common-fields](../common-fields#response-envelope) for the common response 
 ### Failure:
 ```json
 {
+    "Error": "Exception message describing the failure",
     "RequestType": "get-logins-count",
     "Success": false,
-    "Count": 0,
     "Version": "x.y.z",
     "Hash": "dbHashSha1"
 }```
