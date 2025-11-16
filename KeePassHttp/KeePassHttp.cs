@@ -257,7 +257,7 @@ namespace KeePassHttp
                     if (!configOpt.CheckUpdates)
                     {
                         // disable update check by pointing to local url which will return current version
-                        _updateUrl = httpEndpoint + "version";
+                        _updateUrl = httpEndpoint + "version?format=keepass";
                     }
 
                     httpThread = new Thread(new ThreadStart(Run));
@@ -492,7 +492,16 @@ namespace KeePassHttp
             switch (path)
             {
                 case "/version":
-                    string payload = ":\nKeePassHttp:" + GetVersion() + "\n:";
+                    var format = req.QueryString["format"];
+                    string payload;
+                    if (string.Equals(format, "keepass", StringComparison.OrdinalIgnoreCase))
+                    {
+                        payload = ":\nKeePassHttp:" + GetVersion() + "\n:";
+                    }
+                    else
+                    {
+                        payload = GetVersion();
+                    }
                     WritePlainText(resp, payload);
                     return true;
                 default:

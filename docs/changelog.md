@@ -20,7 +20,7 @@ Coming soon
 - Possibility to get "group" name when listing credentials ([#7])
 - Add issue templates for bug reports and feature requests ([#16])
 - Add new handler `get-logins-by-names` ([#18])
-- New endpoint `GET /version` to retrieve current plugin version.
+- New endpoint `GET /version` to retrieve current plugin version ([api/version](../api/endpoints/version))
 - Create documentation page ([#23])
 - UI label and tooltip for Options window
 - CheckUpdates configuration option ([#28])
