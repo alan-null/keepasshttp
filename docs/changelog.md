@@ -8,10 +8,10 @@ toc_title: "Versions:"
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [v2.1.0.0]
 {: .d-inline-block }
-Coming soon
-{: .label .label-yellow }
+Latest
+{: .label .label-green }
 
 ### Added
 
@@ -39,10 +39,11 @@ Coming soon
 - Refactor code for improved readability and maintainability ([#21])
 - Refactor and enhance Request/Response models ([#27])
 
+### Removed
+
+- `Count` property from numerous response models where it was redundant ([#27])
+
 ## [v2.0.0.0]
-{: .d-inline-block }
-Stable
-{: .label .label-green }
 
 ### Fixed
 - Update check failed: version information file could not be downloaded ([#1])
@@ -54,7 +55,8 @@ Stable
 - Legacy release of **KeePassHttp** by [Perry Nguyen].
 
 <!-- versions -->
-[unreleased]: https://github.com/alan-null/keepasshttp/compare/v2.0.0.0...HEAD
+[unreleased]: https://github.com/alan-null/keepasshttp/compare/v2.1.0.0...HEAD
+[v2.1.0.0]: https://github.com/alan-null/keepasshttp/compare/v2.0.0.0...v2.1.0.0
 [v2.0.0.0]: https://github.com/alan-null/keepasshttp/compare/v1.8.4.2...v2.0.0.0
 [v1.8.4.2]: https://github.com/alan-null/keepasshttp/compare/v1.8.4.2...v1.8.4.2
 

@@ -524,7 +524,14 @@ Describe "KeePassHttp protocol" {
     Context "Version Check" {
         It "returns current version" {
             $endpoint = $Context.Endpoint.TrimEnd('/') + '/version'
-            $response = Invoke-WebRequest -Uri $endpoint -Method Get -SkipHttpErrorCheck
+            $response = Invoke-WebRequest -Uri $endpoint -Method Get
+            $response.StatusCode | Should -Be 200
+            $response.Content | Should -Be $KeePassHttpVersion
+        }
+
+        It "returns current version in Plugin format" {
+            $endpoint = $Context.Endpoint.TrimEnd('/') + '/version?format=keepass'
+            $response = Invoke-WebRequest -Uri $endpoint -Method Get
             $response.StatusCode | Should -Be 200
             $response.Content | Should -Match ":\nKeePassHttp:$KeePassHttpVersion\n:"
         }
