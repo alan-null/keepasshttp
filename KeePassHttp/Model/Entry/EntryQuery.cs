@@ -1,4 +1,4 @@
-﻿namespace KeePassHttp.Model
+﻿namespace KeePassHttp.Model.Entry
 {
     public class EntryQuery
     {

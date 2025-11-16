@@ -204,12 +204,14 @@ function Invoke-GetAllLogins {
 function Invoke-SetLogin {
     param(
         [Parameter(Mandatory)][psobject]$Context,
-        [Parameter(Mandatory)][string]$Login,
-        [Parameter(Mandatory)][string]$Password,
-        [string]$Url = [string]::Empty,
+        [string]$Name,
+        [string]$Login,
+        [string]$Password,
+        [string]$Url,
         [string]$Uuid,
         [string]$SubmitUrl,
-        [string]$Realm
+        [string]$Realm,
+        $StringFields
     )
     $p = New-VerifierPair -Context $Context
     $body = @{
@@ -217,13 +219,27 @@ function Invoke-SetLogin {
         Id          = $Context.Id
         Nonce       = $p.Nonce
         Verifier    = $p.Verifier
-        Url         = Protect-Field -Context $Context -PlainText $Url      -Nonce $p.Nonce
-        Login       = Protect-Field -Context $Context -PlainText $Login    -Nonce $p.Nonce
-        Password    = Protect-Field -Context $Context -PlainText $Password -Nonce $p.Nonce
     }
-    if ($Uuid)     { $body.Uuid      = Protect-Field -Context $Context -PlainText $Uuid      -Nonce $p.Nonce }
-    if ($SubmitUrl){ $body.SubmitUrl = Protect-Field -Context $Context -PlainText $SubmitUrl -Nonce $p.Nonce }
-    if ($Realm)    { $body.Realm     = Protect-Field -Context $Context -PlainText $Realm     -Nonce $p.Nonce }
+    if ($Name)      { $body.Name        = Protect-Field -Context $Context -PlainText $Name      -Nonce $p.Nonce }
+    if ($Login)     { $body.Login       = Protect-Field -Context $Context -PlainText $Login     -Nonce $p.Nonce }
+    if ($Password)  { $body.Password    = Protect-Field -Context $Context -PlainText $Password  -Nonce $p.Nonce }
+    if ($Url)       { $body.Url         = Protect-Field -Context $Context -PlainText $Url       -Nonce $p.Nonce }
+    if ($Uuid)      { $body.Uuid        = Protect-Field -Context $Context -PlainText $Uuid      -Nonce $p.Nonce }
+    if ($SubmitUrl) { $body.SubmitUrl   = Protect-Field -Context $Context -PlainText $SubmitUrl -Nonce $p.Nonce }
+    if ($Realm)     { $body.Realm       = Protect-Field -Context $Context -PlainText $Realm     -Nonce $p.Nonce }
+    if ($StringFields){
+        $protectedStringFields = @{}
+        foreach ($key in $StringFields.Keys) {
+            $protectedKey   = Protect-Field -Context $Context -PlainText $key                   -Nonce $p.Nonce
+            if ($null -eq $StringFields[$key]) {
+                $protectedStringFields[$protectedKey] = $null
+            }else {
+                $protectedValue = Protect-Field -Context $Context -PlainText $StringFields[$key]    -Nonce $p.Nonce
+                $protectedStringFields[$protectedKey] = $protectedValue
+            }
+        }
+        $body.StringFields = $protectedStringFields
+    }
     $json = $body | ConvertTo-Json
     Invoke-RestMethod -Uri $Context.Endpoint -Method Post -ContentType "application/json" -Body $json
 }

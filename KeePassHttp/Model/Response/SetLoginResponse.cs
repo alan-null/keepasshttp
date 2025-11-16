@@ -1,4 +1,10 @@
-﻿namespace KeePassHttp.Model.Response
+﻿using Newtonsoft.Json;
+
+namespace KeePassHttp.Model.Response
 {
-    public class SetLoginResponse : BaseResponse { }
+    public class SetLoginResponse : BaseResponse
+    {
+        [JsonProperty]
+        public string Uuid { get; set; }
+    }
 }

@@ -34,7 +34,7 @@ namespace KeePassHttp
                                                 };
 
         private const int DEFAULT_NOTIFICATION_TIME = 5000;
-        public const string KEEPASSHTTP_NAME = "KeePassHttp Settings";
+        public const string KEEPASSHTTP_NAME = Constants.KEEPASSHTTP_NAME;
         private const string KEEPASSHTTP_GROUP_NAME = "KeePassHttp Passwords";
         public const string ASSOCIATE_KEY_PREFIX = "AES Key: ";
         private IPluginHost host;

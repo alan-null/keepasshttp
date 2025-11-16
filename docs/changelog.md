@@ -15,7 +15,14 @@ Coming soon
 
 ### Added
 
-- Add new handler `get-login-by-uuid` ([#30])
+- New handler `get-login-by-uuid` ([#30])
+- Extended `set-login` to include extra fields ([#26])
+    - Possibility to set "Name" along with "Login" and "Password" for `set-login` API ([#25])
+    - Possibility to set and update string fields ([#5])
+
+### Fixed
+
+- URL trimmed incorrectly when creating a new entry ([code][base_url_trim])
 
 
 ## [v2.1.0.0]
@@ -75,6 +82,8 @@ Latest
 [#29]: https://github.com/alan-null/keepasshttp/issues/29
 [#28]: https://github.com/alan-null/keepasshttp/issues/28
 [#27]: https://github.com/alan-null/keepasshttp/issues/27
+[#26]: https://github.com/alan-null/keepasshttp/issues/26
+[#25]: https://github.com/alan-null/keepasshttp/issues/25
 [#23]: https://github.com/alan-null/keepasshttp/issues/23
 [#21]: https://github.com/alan-null/keepasshttp/issues/21
 [#20]: https://github.com/alan-null/keepasshttp/issues/20
@@ -89,4 +98,8 @@ Latest
 [#10]: https://github.com/alan-null/keepasshttp/issues/10
 [#9]: https://github.com/alan-null/keepasshttp/issues/9
 [#7]: https://github.com/alan-null/keepasshttp/issues/7
+[#5]: https://github.com/alan-null/keepasshttp/issues/5
 [#1]: https://github.com/alan-null/keepasshttp/issues/1
+
+<!-- commits -->
+[base_url_trim]: https://github.com/alan-null/keepasshttp/blob/ca00b13d244adefbdb0e81ec8b12b036bb7b26f6/KeePassHttp/Handlers.cs#L999-L1003

@@ -334,6 +334,155 @@ Describe "KeePassHttp protocol" {
         }
     }
 
+    Context "SET_LOGIN - ADVANCED" {
+        BeforeAll {
+            $testEntryUid = '8AA5E1EDD5D6F0408DA96064C6710B9B'
+            Restart-KeePassTest -Environment @{ "KPH_ReturnStringFields" = "1"; "KPH_ReturnStringFieldsWithKphOnly" = "0" }
+            function Get-DecryptedEntry {
+                param(
+                    [Parameter(Mandatory)]$Entry,
+                    [Parameter(Mandatory)]$Nonce,
+                    [Parameter(Mandatory)]$Context
+                )
+                [pscustomobject]@{
+                    Uuid     = Unprotect-Field -Context $Context -Cipher $Entry.Uuid -Nonce $Nonce
+                    Title    = Unprotect-Field -Context $Context -Cipher $Entry.Name -Nonce $Nonce
+                    Login    = Unprotect-Field -Context $Context -Cipher $Entry.Login -Nonce $Nonce
+                    Password = Unprotect-Field -Context $Context -Cipher $Entry.Password -Nonce $Nonce
+                }
+            }
+            function Invoke-UpdateEntryAndAssert {
+                param(
+                    [Parameter(Mandatory)]$Context,
+                    [Parameter(Mandatory)]$Original,   # decrypted original fields
+                    [Parameter(Mandatory)][ValidateSet('Login', 'Password', 'Url', 'Name')]$Field,
+                    [Parameter(Mandatory)]$NewValue
+                )
+                switch ($Field) {
+                    'Name' { Invoke-SetLogin -Context $Context -Uuid $Original.Uuid -Name $NewValue | Out-Null }
+                    'Login' { Invoke-SetLogin -Context $Context -Uuid $Original.Uuid -Login $NewValue | Out-Null }
+                    'Password' { Invoke-SetLogin -Context $Context -Uuid $Original.Uuid -Password $NewValue | Out-Null }
+                    'Url' { Invoke-SetLogin -Context $Context -Uuid $Original.Uuid -Url $NewValue | Out-Null }
+                }
+                # Re-query by name (Title) – assuming Title stays same except when Url modifies it (adjust if backend differs)
+                $lookup = Invoke-GetLoginByUuid -Context $Context -Uuid $Original.Uuid
+                $lookup.Entries.Count | Should -Be 1
+                $after = Get-DecryptedEntry -Entry $lookup.Entries[0] -Nonce $lookup.Nonce -Context $Context
+
+                if ($Field -eq 'Name') {
+                    $after.Login    | Should -Be $Original.Login
+                    $after.Password | Should -Be $Original.Password
+                    $after.Title    | Should -Be $NewValue
+                }
+                elseif ($Field -eq 'Login') {
+                    $after.Login    | Should -Be $NewValue
+                    $after.Password | Should -Be $Original.Password
+                    $after.Title    | Should -Be $Original.Title
+                }
+                elseif ($Field -eq 'Password') {
+                    $after.Password | Should -Be $NewValue
+                    $after.Login    | Should -Be $Original.Login
+                    $after.Title    | Should -Be $Original.Title
+                }
+            }
+        }
+
+        AfterAll {
+            Restart-KeePassTest
+        }
+
+        It "set-login updates an existing entry - just login" {
+            $r = Invoke-GetLoginByUuid -Context $Context -Uuid $testEntryUid
+            $r.Entries.Count | Should -Be 1
+            $original = Get-DecryptedEntry -Entry $r.Entries[0] -Nonce $r.Nonce -Context $Context
+            Invoke-UpdateEntryAndAssert -Context $Context -Original $original -Field Login -NewValue "new_login"
+        }
+
+        It "set-login updates an existing entry - just password" {
+            $r = Invoke-GetLoginByUuid -Context $Context -Uuid $testEntryUid
+            $r.Entries.Count | Should -Be 1
+            $original = Get-DecryptedEntry -Entry $r.Entries[0] -Nonce $r.Nonce -Context $Context
+            Invoke-UpdateEntryAndAssert -Context $Context -Original $original -Field Password -NewValue "new_password_123!"
+        }
+
+        It "set-login updates an existing entry - just name" {
+            $r = Invoke-GetLoginByUuid -Context $Context -Uuid $testEntryUid
+            $r.Entries.Count | Should -Be 1
+            $original = Get-DecryptedEntry -Entry $r.Entries[0] -Nonce $r.Nonce -Context $Context
+            Invoke-UpdateEntryAndAssert -Context $Context -Original $original -Field Name -NewValue "New ABC Title"
+        }
+
+        It "set-login updates an existing entry - string fields" {
+            $r = Invoke-GetLoginByUuid -Context $Context -Uuid $testEntryUid
+            $r.Entries.Count | Should -Be 1
+            $entry = $r.Entries[0]
+
+            $p = New-VerifierPair -Context $Context
+            $str_key = "key_1"
+            $str_val = [guid]::NewGuid().ToString("n")
+            $newStringFields = @{ $str_key = $str_val }
+
+            Invoke-SetLogin -Context $Context -Uuid $testEntryUid -StringFields $newStringFields | Out-Null
+
+            # Verify the update
+            $r2 = Invoke-GetLoginByUuid -Context $Context -Uuid $testEntryUid
+            $r2.Entries.Count | Should -Be 1
+            $updatedEntry = $r2.Entries[0]
+
+            # Validate that the number of string fields has increased by 1
+            $updatedEntry.StringFields.Count | Should -Be ($entry.StringFields.Count + 1)
+
+            # Validate that all original string fields are still present and unchanged
+            $updatedStringFields = @{}
+            foreach ($sf in $updatedEntry.StringFields) {
+                $key = Unprotect-Field -Context $Context -Cipher $sf.Key -Nonce $r2.Nonce
+                $value = Unprotect-Field -Context $Context -Cipher $sf.Value -Nonce $r2.Nonce
+                $updatedStringFields[$key] = $value
+            }
+
+            foreach ($sf in $entry.StringFields) {
+                $origKey = Unprotect-Field -Context $Context -Cipher $sf.Key -Nonce $r.Nonce
+                $origValue = Unprotect-Field -Context $Context -Cipher $sf.Value -Nonce $r.Nonce
+
+                $updatedStringFields.ContainsKey($origKey) | Should -BeTrue
+                $updatedStringFields[$origKey] | Should -Be $origValue
+            }
+
+            # Validate that the new string field is present and correct
+            $rawKey = Protect-Field -Context $Context -PlainText $str_key -Nonce $r2.Nonce
+            $match = $updatedEntry.StringFields | Where-Object { $_.Key -eq $rawKey }
+            $match | Should -Not -BeNullOrEmpty
+            $cipherValue = $match.Value
+
+            (Unprotect-Field -Context $Context -Cipher $cipherValue -Nonce $r2.Nonce) | Should -Be $str_val
+        }
+
+        It "set-login updates an existing entry - remove string field" {
+            $p = New-VerifierPair -Context $Context
+            $str_key = "temp_key_to_remove"
+            $str_val = "temp_value"
+            $newStringFields = @{ $str_key = $str_val }
+
+            $r = Invoke-SetLogin -Context $Context -Uuid $testEntryUid -StringFields $newStringFields
+            $r.Success | Should -BeTrue
+
+            # Now remove the string field by setting it to an empty string
+            $removeStringFields = @{ $str_key = $null }
+            $r = Invoke-SetLogin -Context $Context -Uuid $testEntryUid -StringFields $removeStringFields
+            $r.Success | Should -BeTrue
+
+            # Verify the removal
+            $r = Invoke-GetLoginByUuid -Context $Context -Uuid $testEntryUid
+            $r.Entries.Count | Should -Be 1
+            $updatedEntry = $r.Entries[0]
+
+            # Validate that the string field has been removed
+            $rawKey = Protect-Field -Context $Context -PlainText $str_key -Nonce $r.Nonce
+            $match = $updatedEntry.StringFields | Where-Object { $_.Key -eq $rawKey }
+            $match | Should -BeNullOrEmpty
+        }
+    }
+
     Context "GENERATE_PASSWORD" {
         It "generate-password returns one entry with entropy bits" {
             $gen = Invoke-GeneratePassword -Context $Context

@@ -1,18 +1,27 @@
-﻿using KeePassHttp.Attributes;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace KeePassHttp.Model.Request
 {
     public sealed class SetLoginRequest : BaseRequest
     {
-        [JsonProperty, Required]
+        public SetLoginRequest()
+        {
+            RequestType = RequestTypes.SET_LOGIN;
+            StringFields = new Dictionary<string, string>();
+        }
+
+        [JsonProperty]
         public string Login { get; set; }
 
-        [JsonProperty, Required]
+        [JsonProperty]
         public string Password { get; set; }
 
-        [JsonProperty, Required]
+        [JsonProperty]
         public string Url { get; set; }
+
+        [JsonProperty]
+        public string Name { get; set; }
 
         [JsonProperty]
         public string Uuid { get; set; }
@@ -25,5 +34,8 @@ namespace KeePassHttp.Model.Request
         /// </summary>
         [JsonProperty]
         public string Realm { get; set; }
+
+        [JsonProperty]
+        public Dictionary<string,string> StringFields { get; set; }
     }
 }
