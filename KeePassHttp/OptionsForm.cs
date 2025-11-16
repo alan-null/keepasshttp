@@ -43,6 +43,7 @@ namespace KeePassHttp
             SortByTitleRadioButton.Checked = !_config.SortResultByUsername;
             portNumber.Value = _config.ListenerPort;
             hostName.Text = _config.ListenerHost;
+            checkUpdatesCheckbox.Checked = _config.CheckUpdates;
 
             this.returnStringFieldsCheckbox_CheckedChanged(null, EventArgs.Empty);
         }
@@ -62,6 +63,7 @@ namespace KeePassHttp
             _config.SortResultByUsername = SortByUsernameRadioButton.Checked;
             _config.ListenerPort = (int)portNumber.Value;
             _config.ListenerHost = hostName.Text;
+            _config.CheckUpdates = checkUpdatesCheckbox.Checked;
             if (_restartRequired)
             {
                 MessageBox.Show(

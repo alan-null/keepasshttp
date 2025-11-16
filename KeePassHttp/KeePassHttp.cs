@@ -91,7 +91,9 @@ namespace KeePassHttp
             return ConfigProviderFactory(host.CustomConfig);
         }
 
-        public override string UpdateUrl { get { return "https://raw.githubusercontent.com/alan-null/keepasshttp/refs/heads/master/latest-version.txt"; } }
+        private string _updateUrl = "https://raw.githubusercontent.com/alan-null/keepasshttp/refs/heads/master/latest-version.txt";
+
+        public override string UpdateUrl { get { return _updateUrl; } }
 
         private SearchParameters MakeSearchParameters()
         {
@@ -247,9 +249,16 @@ namespace KeePassHttp
 
                     var configOpt = GetConfigProvider();
 
-                    listener.Prefixes.Add(HTTP_SCHEME + configOpt.ListenerHost + ":" + configOpt.ListenerPort.ToString() + "/");
+                    string httpEndpoint = HTTP_SCHEME + configOpt.ListenerHost + ":" + configOpt.ListenerPort.ToString() + "/";
+                    listener.Prefixes.Add(httpEndpoint);
                     //listener.Prefixes.Add(HTTPS_PREFIX + HTTPS_PORT + "/");
                     listener.Start();
+
+                    if (!configOpt.CheckUpdates)
+                    {
+                        // disable update check by pointing to local url which will return current version
+                        _updateUrl = httpEndpoint + "version";
+                    }
 
                     httpThread = new Thread(new ThreadStart(Run));
                     httpThread.Start();
@@ -394,6 +403,12 @@ namespace KeePassHttp
 
             resp.StatusCode = (int)HttpStatusCode.OK;
 
+            if (TryHandlePathRequest(req, resp))
+            {
+                // Endpoint handled; no further processing.
+                return;
+            }
+
             var serializer = NewJsonSerializer();
             BaseRequest request = null;
             BaseResponse response = null;
@@ -423,6 +438,11 @@ namespace KeePassHttp
                 {
                     resp.StatusCode = (int)HttpStatusCode.BadRequest;
                     response = new ErrorResponse("Invalid JSON: " + e.Message);
+                }
+                catch (Exception e)
+                {
+                    resp.StatusCode = (int)HttpStatusCode.BadRequest;
+                    response = new ErrorResponse("Error parsing request: " + e.Message);
                 }
             }
 
@@ -460,6 +480,36 @@ namespace KeePassHttp
             SerializeAndSendResponse(request, response, resp, serializer);
         }
 
+        private bool TryHandlePathRequest(HttpListenerRequest req, HttpListenerResponse resp)
+        {
+            if (!string.Equals(req.HttpMethod, "GET", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            var path = req.Url.AbsolutePath.TrimEnd('/').ToLowerInvariant();
+
+            switch (path)
+            {
+                case "/version":
+                    string payload = ":\nKeePassHttp:" + GetVersion() + "\n:";
+                    WritePlainText(resp, payload);
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private void WritePlainText(HttpListenerResponse resp, string content)
+        {
+            resp.ContentType = "text/plain; charset=utf-8";
+            var buffer = Encoding.UTF8.GetBytes(content);
+            resp.ContentLength64 = buffer.Length;
+            resp.OutputStream.Write(buffer, 0, buffer.Length);
+            resp.OutputStream.Close();
+            resp.Close();
+        }
+
         private void SerializeAndSendResponse(BaseRequest req, BaseResponse response, HttpListenerResponse resp, JsonSerializer serializer)
         {
             if (response == null)
@@ -482,9 +532,7 @@ namespace KeePassHttp
 
             if (string.IsNullOrEmpty(response.Version))
             {
-                Assembly assembly = Assembly.GetExecutingAssembly();
-                FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
-                response.Version = fvi.ProductVersion;
+                response.Version = GetVersion();
             }
 
             resp.ContentType = "application/json";
@@ -495,6 +543,13 @@ namespace KeePassHttp
             resp.OutputStream.Write(buffer, 0, buffer.Length);
             resp.OutputStream.Close();
             resp.Close();
+        }
+
+        private static string GetVersion()
+        {
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
+            return fvi.ProductVersion;
         }
 
         public override void Terminate()

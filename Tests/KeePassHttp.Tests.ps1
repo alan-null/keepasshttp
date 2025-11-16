@@ -27,6 +27,7 @@ Describe "KeePassHttp protocol" {
         $Id = "Test Key"
         $Key = "Lgh8xMEkV2j10bG7O42GjCibsUEpM80T7Db+skKGiNc="
         $Endpoint = "http://localhost:19455"
+        $KeePassHttpVersion = & "$PSScriptRoot\..\scripts\Get-LatestVersion.ps1" (Join-Path $PSScriptRoot '..\latest-version.txt') | Where-Object { $_.Name -eq 'KeePassHttp' } | Select-Object -ExpandProperty Version
         $Context = New-KphContext -Key $Key -Id $Id -Endpoint $Endpoint
     }
 
@@ -63,7 +64,7 @@ Describe "KeePassHttp protocol" {
             $json = $response.Content | ConvertFrom-Json
             $json.RequestType | Should -Be "test-associate"
             $json.Success     | Should -BeFalse
-            $json.Version     | Should -Be '2.0.0.0'
+            $json.Version     | Should -Be $KeePassHttpVersion
             $json.Hash        | Should -Be '000c8edde13701752405676e684b7570c13a9291'
         }
     }
@@ -520,6 +521,15 @@ Describe "KeePassHttp protocol" {
         }
     }
 
+    Context "Version Check" {
+        It "returns current version" {
+            $endpoint = $Context.Endpoint.TrimEnd('/') + '/version'
+            $response = Invoke-WebRequest -Uri $endpoint -Method Get -SkipHttpErrorCheck
+            $response.StatusCode | Should -Be 200
+            $response.Content | Should -Match ":\nKeePassHttp:$KeePassHttpVersion\n:"
+        }
+    }
+
     Context "Options_ListenerHost:ListenerPort" {
         It "creates listener on custom host/port" {
             Restart-KeePassTest -Environment @{ "KPH_ListenerHost" = "127.0.0.1" ; "KPH_ListenerPort" = "12345" }
@@ -529,5 +539,9 @@ Describe "KeePassHttp protocol" {
             $r = Invoke-TestAssociate -Context $customCtx
             $r.Success | Should -BeTrue
         }
+    }
+
+    AfterAll {
+        Restart-KeePassTest
     }
 }

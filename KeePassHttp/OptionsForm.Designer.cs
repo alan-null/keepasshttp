@@ -32,6 +32,8 @@
             this.okButton = new System.Windows.Forms.Button();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.checkUpdatesCheckbox = new System.Windows.Forms.CheckBox();
+            this.labelUpdates = new System.Windows.Forms.Label();
             this.labelInterface = new System.Windows.Forms.Label();
             this.labelResults = new System.Windows.Forms.Label();
             this.labelCleanup = new System.Windows.Forms.Label();
@@ -108,6 +110,8 @@
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.checkUpdatesCheckbox);
+            this.tabPage1.Controls.Add(this.labelUpdates);
             this.tabPage1.Controls.Add(this.labelInterface);
             this.tabPage1.Controls.Add(this.labelResults);
             this.tabPage1.Controls.Add(this.labelCleanup);
@@ -128,6 +132,26 @@
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "General";
             this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // checkUpdatesCheckbox
+            // 
+            this.checkUpdatesCheckbox.AutoSize = true;
+            this.checkUpdatesCheckbox.Location = new System.Drawing.Point(14, 347);
+            this.checkUpdatesCheckbox.Name = "checkUpdatesCheckbox";
+            this.checkUpdatesCheckbox.Size = new System.Drawing.Size(163, 17);
+            this.checkUpdatesCheckbox.TabIndex = 27;
+            this.checkUpdatesCheckbox.Text = "Check KeePassHttp updates";
+            this.checkUpdatesCheckbox.UseVisualStyleBackColor = true;
+            // 
+            // labelUpdates
+            // 
+            this.labelUpdates.AutoSize = true;
+            this.labelUpdates.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelUpdates.Location = new System.Drawing.Point(7, 328);
+            this.labelUpdates.Name = "labelUpdates";
+            this.labelUpdates.Size = new System.Drawing.Size(58, 13);
+            this.labelUpdates.TabIndex = 26;
+            this.labelUpdates.Text = "Updates:";
             // 
             // labelInterface
             // 
@@ -153,7 +177,7 @@
             // 
             this.labelCleanup.AutoSize = true;
             this.labelCleanup.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelCleanup.Location = new System.Drawing.Point(7, 235);
+            this.labelCleanup.Location = new System.Drawing.Point(7, 236);
             this.labelCleanup.Name = "labelCleanup";
             this.labelCleanup.Size = new System.Drawing.Size(57, 13);
             this.labelCleanup.TabIndex = 22;
@@ -217,7 +241,7 @@
             this.removePermissionsButton.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.removePermissionsButton.ImageAlign = System.Drawing.ContentAlignment.TopLeft;
-            this.removePermissionsButton.Location = new System.Drawing.Point(14, 289);
+            this.removePermissionsButton.Location = new System.Drawing.Point(14, 290);
             this.removePermissionsButton.Name = "removePermissionsButton";
             this.removePermissionsButton.Size = new System.Drawing.Size(372, 28);
             this.removePermissionsButton.TabIndex = 16;
@@ -239,7 +263,7 @@
             // 
             this.removeButton.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.removeButton.Location = new System.Drawing.Point(14, 255);
+            this.removeButton.Location = new System.Drawing.Point(14, 256);
             this.removeButton.Name = "removeButton";
             this.removeButton.Size = new System.Drawing.Size(372, 28);
             this.removeButton.TabIndex = 11;
@@ -542,5 +566,7 @@
         private System.Windows.Forms.Label labelCleanup;
         private System.Windows.Forms.Label labelResults;
         private System.Windows.Forms.Label labelInterface;
+        private System.Windows.Forms.Label labelUpdates;
+        private System.Windows.Forms.CheckBox checkUpdatesCheckbox;
     }
 }

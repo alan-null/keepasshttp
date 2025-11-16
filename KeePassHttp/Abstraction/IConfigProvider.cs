@@ -15,5 +15,6 @@
         bool SortResultByUsername { get; set; }
         long ListenerPort { get; set; }
         string ListenerHost { get; set; }
+        bool CheckUpdates { get; set; }
     }
 }

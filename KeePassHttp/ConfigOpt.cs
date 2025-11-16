@@ -18,6 +18,7 @@ namespace KeePassHttp
         const string SortResultByUsernameKey = "KeePassHttp_SortResultByUsername";
         const string ListenerPortKey = "KeePassHttp_ListenerPort";
         const string ListenerHostKey = "KeePassHttp_ListenerHost";
+        const string CheckUpdatesKey = "KeePassHttp_CheckUpdates";
 
         public ConfigOpt(AceCustomConfig config)
         {
@@ -99,6 +100,12 @@ namespace KeePassHttp
         {
             get { return _config.GetString(ListenerHostKey, KeePassHttpExt.DEFAULT_HOST); }
             set { _config.SetString(ListenerHostKey, value); }
+        }
+
+        public bool CheckUpdates
+        {
+            get { return _config.GetBool(CheckUpdatesKey, true); }
+            set { _config.SetBool(CheckUpdatesKey, value); }
         }
     }
 }

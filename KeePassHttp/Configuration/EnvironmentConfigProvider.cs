@@ -20,6 +20,7 @@ namespace KeePassHttp.Configuration
         private bool _sortResultByUsername;
         private long _listenerPort;
         private string _listenerHost;
+        private bool _checkUpdates;
 
         private readonly DefaultConfigProvider _defaults;
 
@@ -118,6 +119,12 @@ namespace KeePassHttp.Configuration
         {
             get { string s; return TryGetEnvString("ListenerHost", out s) ? s : _listenerHost; }
             set { _listenerHost = value; }
+        }
+
+        public bool CheckUpdates
+        {
+            get { bool v; return TryGetEnvBool("CheckUpdates", out v) ? v : _checkUpdates; }
+            set { _checkUpdates = value; }
         }
 
         private static bool TryGetEnvBool(string name, out bool value)

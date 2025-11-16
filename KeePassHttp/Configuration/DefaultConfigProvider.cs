@@ -24,5 +24,6 @@ namespace KeePassHttp.Configuration
         public bool SortResultByUsername { get { return _opt.SortResultByUsername; } set { _opt.SortResultByUsername = value; } }
         public long ListenerPort { get { return _opt.ListenerPort; } set { _opt.ListenerPort = value; } }
         public string ListenerHost { get { return _opt.ListenerHost; } set { _opt.ListenerHost = value; } }
+        public bool CheckUpdates { get { return _opt.CheckUpdates; } set { _opt.CheckUpdates = value; } }
     }
 }
