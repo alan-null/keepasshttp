@@ -16,8 +16,15 @@ namespace KeePassHttp
         const string ReturnStringFieldsKey = "KeePassHttp_ReturnStringFields";
         const string ReturnStringFieldsWithKphOnlyKey = "KeePassHttp_ReturnStringFieldsWithKphOnly";
         const string SortResultByUsernameKey = "KeePassHttp_SortResultByUsername";
-        const string ListenerPortKey = "KeePassHttp_ListenerPort";
-        const string ListenerHostKey = "KeePassHttp_ListenerHost";
+        
+        const string ActivateHttpListenerKey = "KeePassHttp_ActivateHttpListener";
+        const string ListenerPortHttpKey = "KeePassHttp_ListenerPort";
+        const string ListenerHostHttpKey = "KeePassHttp_ListenerHost";
+
+        const string ActivateHttpsListenerKey = "KeePassHttp_ActivateHttpsListener";
+        const string ListenerHostHttpsKey = "KeePassHttp_ListenerHostHttps";
+        const string ListenerPortHttpsKey = "KeePassHttp_ListenerPortHttps";
+
         const string CheckUpdatesKey = "KeePassHttp_CheckUpdates";
 
         public ConfigOpt(AceCustomConfig config)
@@ -90,16 +97,40 @@ namespace KeePassHttp
             set { _config.SetBool(SortResultByUsernameKey, value); }
         }
 
-        public long ListenerPort
+        public bool ActivateHttpListener
         {
-            get { return _config.GetLong(ListenerPortKey, KeePassHttpExt.DEFAULT_PORT); }
-            set { _config.SetLong(ListenerPortKey, value); }
+            get { return _config.GetBool(ActivateHttpListenerKey, true); }
+            set { _config.SetBool(ActivateHttpListenerKey, value); }
         }
 
-        public string ListenerHost
+        public long ListenerPortHttp
         {
-            get { return _config.GetString(ListenerHostKey, KeePassHttpExt.DEFAULT_HOST); }
-            set { _config.SetString(ListenerHostKey, value); }
+            get { return _config.GetLong(ListenerPortHttpKey, Constants.Host.DEFAULT_PORT_HTTP); }
+            set { _config.SetLong(ListenerPortHttpKey, value); }
+        }
+
+        public string ListenerHostHttp
+        {
+            get { return _config.GetString(ListenerHostHttpKey, Constants.Host.DEFAULT_HOST); }
+            set { _config.SetString(ListenerHostHttpKey, value); }
+        }
+
+        public bool ActivateHttpsListener
+        {
+            get { return _config.GetBool(ActivateHttpsListenerKey, false); }
+            set { _config.SetBool(ActivateHttpsListenerKey, value); }
+        }
+
+        public long ListenerPortHttps
+        {
+            get { return _config.GetLong(ListenerPortHttpsKey, Constants.Host.DEFAULT_PORT_HTTPS); }
+            set { _config.SetLong(ListenerPortHttpsKey, value); }
+        }
+
+        public string ListenerHostHttps
+        {
+            get { return _config.GetString(ListenerHostHttpsKey, Constants.Host.DEFAULT_HOST); }
+            set { _config.SetString(ListenerHostHttpsKey, value); }
         }
 
         public bool CheckUpdates

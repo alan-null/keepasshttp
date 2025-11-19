@@ -13,6 +13,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -39,14 +40,15 @@ namespace KeePassHttp
         public const string ASSOCIATE_KEY_PREFIX = "AES Key: ";
         private IPluginHost host;
         private HttpListener listener;
+        [Obsolete]
         public const int DEFAULT_PORT = 19455;
+        [Obsolete]
         public const string DEFAULT_HOST = "localhost";
         /// <summary>
         /// TODO make configurable
         /// </summary>
         private const string HTTP_SCHEME = "http://";
-        //private const string HTTPS_PREFIX = "https://localhost:";
-        //private int HTTPS_PORT = DEFAULT_PORT + 1;
+        private const string HTTPS_SCHEME = "https://";
         private Thread httpThread;
         private volatile bool stopped = false;
 
@@ -249,15 +251,22 @@ namespace KeePassHttp
 
                     var configOpt = GetConfigProvider();
 
-                    string httpEndpoint = HTTP_SCHEME + configOpt.ListenerHost + ":" + configOpt.ListenerPort.ToString() + "/";
-                    listener.Prefixes.Add(httpEndpoint);
-                    //listener.Prefixes.Add(HTTPS_PREFIX + HTTPS_PORT + "/");
+                    if (configOpt.ActivateHttpListener)
+                    {
+                        listener.Prefixes.Add(HTTP_SCHEME + configOpt.ListenerHostHttp + ":" + configOpt.ListenerPortHttp.ToString() + "/");
+                    }
+
+                    if (configOpt.ActivateHttpsListener)
+                    {
+                        listener.Prefixes.Add(HTTPS_SCHEME + configOpt.ListenerHostHttps + ":" + configOpt.ListenerPortHttps.ToString() + "/");
+                    }
+
                     listener.Start();
 
-                    if (!configOpt.CheckUpdates)
+                    if (!configOpt.CheckUpdates && listener.IsListening)
                     {
                         // disable update check by pointing to local url which will return current version
-                        _updateUrl = httpEndpoint + "version?format=keepass";
+                        _updateUrl = listener.Prefixes.FirstOrDefault() + "version?format=keepass";
                     }
 
                     httpThread = new Thread(new ThreadStart(Run));

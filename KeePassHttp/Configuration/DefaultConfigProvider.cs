@@ -22,8 +22,13 @@ namespace KeePassHttp.Configuration
         public bool ReturnStringFields { get { return _opt.ReturnStringFields; } set { _opt.ReturnStringFields = value; } }
         public bool ReturnStringFieldsWithKphOnly { get { return _opt.ReturnStringFieldsWithKphOnly; } set { _opt.ReturnStringFieldsWithKphOnly = value; } }
         public bool SortResultByUsername { get { return _opt.SortResultByUsername; } set { _opt.SortResultByUsername = value; } }
-        public long ListenerPort { get { return _opt.ListenerPort; } set { _opt.ListenerPort = value; } }
-        public string ListenerHost { get { return _opt.ListenerHost; } set { _opt.ListenerHost = value; } }
+        public long ListenerPortHttp { get { return _opt.ListenerPortHttp; } set { _opt.ListenerPortHttp = value; } }
+        public string ListenerHostHttp { get { return _opt.ListenerHostHttp; } set { _opt.ListenerHostHttp = value; } }
+        public long ListenerPortHttps { get { return _opt.ListenerPortHttps; } set { _opt.ListenerPortHttps = value; } }
+        public string ListenerHostHttps { get { return _opt.ListenerHostHttps; } set { _opt.ListenerHostHttps = value; } }
         public bool CheckUpdates { get { return _opt.CheckUpdates; } set { _opt.CheckUpdates = value; } }
+        public bool ActivateHttpListener { get { return _opt.ActivateHttpListener; } set { _opt.ActivateHttpListener = value; } }
+        public bool ActivateHttpsListener { get { return _opt.ActivateHttpsListener; } set { _opt.ActivateHttpsListener = value; } }
+
     }
 }

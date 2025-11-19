@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(OptionsForm));
             this.cancelButton = new System.Windows.Forms.Button();
             this.okButton = new System.Windows.Forms.Button();
             this.tabControl1 = new System.Windows.Forms.TabControl();
@@ -49,14 +50,7 @@
             this.credNotifyCheckbox = new System.Windows.Forms.CheckBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.returnStringFieldsWithKphOnlyCheckBox = new System.Windows.Forms.CheckBox();
-            this.hostName = new System.Windows.Forms.TextBox();
             this.label10 = new System.Windows.Forms.Label();
-            this.label8 = new System.Windows.Forms.Label();
-            this.label9 = new System.Windows.Forms.Label();
-            this.label7 = new System.Windows.Forms.Label();
-            this.portNumber = new System.Windows.Forms.NumericUpDown();
-            this.label5 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.returnStringFieldsCheckbox = new System.Windows.Forms.CheckBox();
@@ -65,10 +59,33 @@
             this.label1 = new System.Windows.Forms.Label();
             this.credAllowUpdatesCheckbox = new System.Windows.Forms.CheckBox();
             this.credAllowAccessCheckbox = new System.Windows.Forms.CheckBox();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.activateHttpListenerCheckbox = new System.Windows.Forms.CheckBox();
+            this.groupBoxHTTPS = new System.Windows.Forms.GroupBox();
+            this.label15 = new System.Windows.Forms.Label();
+            this.listenerHostHttps = new System.Windows.Forms.TextBox();
+            this.label16 = new System.Windows.Forms.Label();
+            this.label17 = new System.Windows.Forms.Label();
+            this.portNumberHttps = new System.Windows.Forms.NumericUpDown();
+            this.label18 = new System.Windows.Forms.Label();
+            this.activateHttpsListenerCheckbox = new System.Windows.Forms.CheckBox();
+            this.groupBoxHTTP = new System.Windows.Forms.GroupBox();
+            this.label11 = new System.Windows.Forms.Label();
+            this.listenerHostHttp = new System.Windows.Forms.TextBox();
+            this.label12 = new System.Windows.Forms.Label();
+            this.label13 = new System.Windows.Forms.Label();
+            this.portNumberHttp = new System.Windows.Forms.NumericUpDown();
+            this.label14 = new System.Windows.Forms.Label();
+            this.instructionsLink = new System.Windows.Forms.LinkLabel();
+            this.labelListenerDescription = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.portNumber)).BeginInit();
+            this.tabPage3.SuspendLayout();
+            this.groupBoxHTTPS.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.portNumberHttps)).BeginInit();
+            this.groupBoxHTTP.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.portNumberHttp)).BeginInit();
             this.SuspendLayout();
             // 
             // cancelButton
@@ -102,6 +119,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
+            this.tabControl1.Controls.Add(this.tabPage3);
             this.tabControl1.Location = new System.Drawing.Point(1, 3);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
@@ -295,14 +313,7 @@
             // tabPage2
             // 
             this.tabPage2.Controls.Add(this.returnStringFieldsWithKphOnlyCheckBox);
-            this.tabPage2.Controls.Add(this.hostName);
             this.tabPage2.Controls.Add(this.label10);
-            this.tabPage2.Controls.Add(this.label8);
-            this.tabPage2.Controls.Add(this.label9);
-            this.tabPage2.Controls.Add(this.label7);
-            this.tabPage2.Controls.Add(this.portNumber);
-            this.tabPage2.Controls.Add(this.label5);
-            this.tabPage2.Controls.Add(this.label6);
             this.tabPage2.Controls.Add(this.label4);
             this.tabPage2.Controls.Add(this.label3);
             this.tabPage2.Controls.Add(this.returnStringFieldsCheckbox);
@@ -330,15 +341,6 @@
     "r KPH:)";
             this.returnStringFieldsWithKphOnlyCheckBox.UseVisualStyleBackColor = true;
             // 
-            // hostName
-            // 
-            this.hostName.Location = new System.Drawing.Point(48, 318);
-            this.hostName.Name = "hostName";
-            this.hostName.Size = new System.Drawing.Size(103, 20);
-            this.hostName.TabIndex = 25;
-            this.hostName.Text = "localhost";
-            this.hostName.TextChanged += new System.EventHandler(this.hostName_TextChanged);
-            // 
             // label10
             // 
             this.label10.AutoSize = true;
@@ -348,77 +350,6 @@
             this.label10.TabIndex = 23;
             this.label10.Text = "Only change the host to bind to if you want to give access to other computers.\r\nU" +
     "se \'*\' to bind it to all your IP addresses (potentially dangerous!)\r\n";
-            // 
-            // label8
-            // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(157, 318);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(244, 65);
-            this.label8.TabIndex = 26;
-            this.label8.Text = "Default: localhost\r\nYou might need to run KeePass as administrator \r\nwhen you cha" +
-    "nge this.\r\nAlso don\'t forget to open the firewall if you want to \r\nbe able to us" +
-    "e it from a different computer.";
-            // 
-            // label9
-            // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(10, 321);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(32, 13);
-            this.label9.TabIndex = 24;
-            this.label9.Text = "Host:";
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(157, 415);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(241, 39);
-            this.label7.TabIndex = 30;
-            this.label7.Text = "Default: 19455\r\nDon\'t forget to change the port number also in\r\nthe plugins like " +
-    "chromeIPass, PassIFox, kypass,...";
-            // 
-            // portNumber
-            // 
-            this.portNumber.Location = new System.Drawing.Point(48, 415);
-            this.portNumber.Maximum = new decimal(new int[] {
-            99999,
-            0,
-            0,
-            0});
-            this.portNumber.Minimum = new decimal(new int[] {
-            1025,
-            0,
-            0,
-            0});
-            this.portNumber.Name = "portNumber";
-            this.portNumber.Size = new System.Drawing.Size(60, 20);
-            this.portNumber.TabIndex = 29;
-            this.portNumber.Value = new decimal(new int[] {
-            19455,
-            0,
-            0,
-            0});
-            this.portNumber.ValueChanged += new System.EventHandler(this.portNumber_ValueChanged);
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(8, 393);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(312, 13);
-            this.label5.TabIndex = 27;
-            this.label5.Text = "Change the default port number if you have connection problems";
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(13, 417);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(29, 13);
-            this.label6.TabIndex = 28;
-            this.label6.Text = "Port:";
             // 
             // label4
             // 
@@ -502,6 +433,239 @@
             this.credAllowAccessCheckbox.Text = "Always allow &access to entries";
             this.credAllowAccessCheckbox.UseVisualStyleBackColor = true;
             // 
+            // tabPage3
+            // 
+            this.tabPage3.Controls.Add(this.activateHttpListenerCheckbox);
+            this.tabPage3.Controls.Add(this.groupBoxHTTPS);
+            this.tabPage3.Controls.Add(this.activateHttpsListenerCheckbox);
+            this.tabPage3.Controls.Add(this.groupBoxHTTP);
+            this.tabPage3.Controls.Add(this.instructionsLink);
+            this.tabPage3.Controls.Add(this.labelListenerDescription);
+            this.tabPage3.Location = new System.Drawing.Point(4, 22);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage3.Size = new System.Drawing.Size(402, 472);
+            this.tabPage3.TabIndex = 2;
+            this.tabPage3.Text = "Listener Configuration";
+            this.tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // activateHttpListenerCheckbox
+            // 
+            this.activateHttpListenerCheckbox.AutoSize = true;
+            this.activateHttpListenerCheckbox.Location = new System.Drawing.Point(7, 84);
+            this.activateHttpListenerCheckbox.Margin = new System.Windows.Forms.Padding(2);
+            this.activateHttpListenerCheckbox.Name = "activateHttpListenerCheckbox";
+            this.activateHttpListenerCheckbox.Size = new System.Drawing.Size(137, 17);
+            this.activateHttpListenerCheckbox.TabIndex = 52;
+            this.activateHttpListenerCheckbox.Text = "Activate HTTP Listener";
+            this.activateHttpListenerCheckbox.UseVisualStyleBackColor = true;
+            this.activateHttpListenerCheckbox.CheckedChanged += new System.EventHandler(this.activateHttpListenerCheckbox_CheckedChanged);
+            // 
+            // groupBoxHTTPS
+            // 
+            this.groupBoxHTTPS.Controls.Add(this.label15);
+            this.groupBoxHTTPS.Controls.Add(this.listenerHostHttps);
+            this.groupBoxHTTPS.Controls.Add(this.label16);
+            this.groupBoxHTTPS.Controls.Add(this.label17);
+            this.groupBoxHTTPS.Controls.Add(this.portNumberHttps);
+            this.groupBoxHTTPS.Controls.Add(this.label18);
+            this.groupBoxHTTPS.Location = new System.Drawing.Point(7, 221);
+            this.groupBoxHTTPS.Margin = new System.Windows.Forms.Padding(2);
+            this.groupBoxHTTPS.Name = "groupBoxHTTPS";
+            this.groupBoxHTTPS.Padding = new System.Windows.Forms.Padding(2);
+            this.groupBoxHTTPS.Size = new System.Drawing.Size(387, 77);
+            this.groupBoxHTTPS.TabIndex = 51;
+            this.groupBoxHTTPS.TabStop = false;
+            this.groupBoxHTTPS.Text = "HTTPS Listener";
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(218, 22);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(89, 13);
+            this.label15.TabIndex = 48;
+            this.label15.Text = "Default: localhost";
+            // 
+            // listenerHostHttps
+            // 
+            this.listenerHostHttps.Location = new System.Drawing.Point(44, 21);
+            this.listenerHostHttps.Margin = new System.Windows.Forms.Padding(2);
+            this.listenerHostHttps.Name = "listenerHostHttps";
+            this.listenerHostHttps.Size = new System.Drawing.Size(164, 20);
+            this.listenerHostHttps.TabIndex = 47;
+            this.listenerHostHttps.Text = "localhost";
+            this.listenerHostHttps.TextChanged += new System.EventHandler(this.hostName_TextChanged);
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(8, 22);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(32, 13);
+            this.label16.TabIndex = 46;
+            this.label16.Text = "Host:";
+            // 
+            // label17
+            // 
+            this.label17.AutoSize = true;
+            this.label17.Location = new System.Drawing.Point(218, 47);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(77, 13);
+            this.label17.TabIndex = 45;
+            this.label17.Text = "Default: 19456";
+            // 
+            // portNumberHttps
+            // 
+            this.portNumberHttps.Location = new System.Drawing.Point(44, 48);
+            this.portNumberHttps.Maximum = new decimal(new int[] {
+            99999,
+            0,
+            0,
+            0});
+            this.portNumberHttps.Minimum = new decimal(new int[] {
+            1025,
+            0,
+            0,
+            0});
+            this.portNumberHttps.Name = "portNumberHttps";
+            this.portNumberHttps.Size = new System.Drawing.Size(60, 20);
+            this.portNumberHttps.TabIndex = 44;
+            this.portNumberHttps.Value = new decimal(new int[] {
+            19456,
+            0,
+            0,
+            0});
+            this.portNumberHttps.ValueChanged += new System.EventHandler(this.portNumber_ValueChanged);
+            // 
+            // label18
+            // 
+            this.label18.AutoSize = true;
+            this.label18.Location = new System.Drawing.Point(10, 49);
+            this.label18.Name = "label18";
+            this.label18.Size = new System.Drawing.Size(29, 13);
+            this.label18.TabIndex = 43;
+            this.label18.Text = "Port:";
+            // 
+            // activateHttpsListenerCheckbox
+            // 
+            this.activateHttpsListenerCheckbox.AutoSize = true;
+            this.activateHttpsListenerCheckbox.Location = new System.Drawing.Point(7, 203);
+            this.activateHttpsListenerCheckbox.Margin = new System.Windows.Forms.Padding(2);
+            this.activateHttpsListenerCheckbox.Name = "activateHttpsListenerCheckbox";
+            this.activateHttpsListenerCheckbox.Size = new System.Drawing.Size(144, 17);
+            this.activateHttpsListenerCheckbox.TabIndex = 50;
+            this.activateHttpsListenerCheckbox.Text = "Activate HTTPS Listener";
+            this.activateHttpsListenerCheckbox.UseVisualStyleBackColor = true;
+            this.activateHttpsListenerCheckbox.CheckedChanged += new System.EventHandler(this.activateHttpsListenerCheckbox_CheckedChanged);
+            // 
+            // groupBoxHTTP
+            // 
+            this.groupBoxHTTP.Controls.Add(this.label11);
+            this.groupBoxHTTP.Controls.Add(this.listenerHostHttp);
+            this.groupBoxHTTP.Controls.Add(this.label12);
+            this.groupBoxHTTP.Controls.Add(this.label13);
+            this.groupBoxHTTP.Controls.Add(this.portNumberHttp);
+            this.groupBoxHTTP.Controls.Add(this.label14);
+            this.groupBoxHTTP.Location = new System.Drawing.Point(7, 105);
+            this.groupBoxHTTP.Margin = new System.Windows.Forms.Padding(2);
+            this.groupBoxHTTP.Name = "groupBoxHTTP";
+            this.groupBoxHTTP.Padding = new System.Windows.Forms.Padding(2);
+            this.groupBoxHTTP.Size = new System.Drawing.Size(387, 81);
+            this.groupBoxHTTP.TabIndex = 49;
+            this.groupBoxHTTP.TabStop = false;
+            this.groupBoxHTTP.Text = "HTTP Listener";
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(220, 24);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(89, 13);
+            this.label11.TabIndex = 48;
+            this.label11.Text = "Default: localhost";
+            // 
+            // listenerHostHttp
+            // 
+            this.listenerHostHttp.Location = new System.Drawing.Point(46, 24);
+            this.listenerHostHttp.Margin = new System.Windows.Forms.Padding(2);
+            this.listenerHostHttp.Name = "listenerHostHttp";
+            this.listenerHostHttp.Size = new System.Drawing.Size(164, 20);
+            this.listenerHostHttp.TabIndex = 47;
+            this.listenerHostHttp.Text = "localhost";
+            this.listenerHostHttp.TextChanged += new System.EventHandler(this.hostName_TextChanged);
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(10, 24);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(32, 13);
+            this.label12.TabIndex = 46;
+            this.label12.Text = "Host:";
+            // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.Location = new System.Drawing.Point(220, 49);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(77, 13);
+            this.label13.TabIndex = 45;
+            this.label13.Text = "Default: 19455";
+            // 
+            // portNumberHttp
+            // 
+            this.portNumberHttp.Location = new System.Drawing.Point(46, 50);
+            this.portNumberHttp.Maximum = new decimal(new int[] {
+            99999,
+            0,
+            0,
+            0});
+            this.portNumberHttp.Minimum = new decimal(new int[] {
+            1025,
+            0,
+            0,
+            0});
+            this.portNumberHttp.Name = "portNumberHttp";
+            this.portNumberHttp.Size = new System.Drawing.Size(60, 20);
+            this.portNumberHttp.TabIndex = 44;
+            this.portNumberHttp.Value = new decimal(new int[] {
+            19455,
+            0,
+            0,
+            0});
+            this.portNumberHttp.ValueChanged += new System.EventHandler(this.portNumber_ValueChanged);
+            // 
+            // label14
+            // 
+            this.label14.AutoSize = true;
+            this.label14.Location = new System.Drawing.Point(13, 51);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(29, 13);
+            this.label14.TabIndex = 43;
+            this.label14.Text = "Port:";
+            // 
+            // instructionsLink
+            // 
+            this.instructionsLink.AutoSize = true;
+            this.instructionsLink.Location = new System.Drawing.Point(4, 51);
+            this.instructionsLink.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.instructionsLink.Name = "instructionsLink";
+            this.instructionsLink.Size = new System.Drawing.Size(110, 13);
+            this.instructionsLink.TabIndex = 48;
+            this.instructionsLink.TabStop = true;
+            this.instructionsLink.Text = "Read the instructions!";
+            this.instructionsLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.instructionsLink_LinkClicked);
+            // 
+            // labelListenerDescription
+            // 
+            this.labelListenerDescription.AutoSize = true;
+            this.labelListenerDescription.Location = new System.Drawing.Point(4, 7);
+            this.labelListenerDescription.Name = "labelListenerDescription";
+            this.labelListenerDescription.Size = new System.Drawing.Size(362, 39);
+            this.labelListenerDescription.TabIndex = 37;
+            this.labelListenerDescription.Text = resources.GetString("labelListenerDescription.Text");
+            // 
             // OptionsForm
             // 
             this.AcceptButton = this.okButton;
@@ -524,7 +688,14 @@
             this.tabPage1.PerformLayout();
             this.tabPage2.ResumeLayout(false);
             this.tabPage2.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.portNumber)).EndInit();
+            this.tabPage3.ResumeLayout(false);
+            this.tabPage3.PerformLayout();
+            this.groupBoxHTTPS.ResumeLayout(false);
+            this.groupBoxHTTPS.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.portNumberHttps)).EndInit();
+            this.groupBoxHTTP.ResumeLayout(false);
+            this.groupBoxHTTP.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.portNumberHttp)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -553,14 +724,7 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.RadioButton SortByUsernameRadioButton;
         private System.Windows.Forms.RadioButton SortByTitleRadioButton;
-        private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.NumericUpDown portNumber;
-        private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.TextBox hostName;
         private System.Windows.Forms.Label label10;
-        private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.Label label9;
         private System.Windows.Forms.CheckBox returnStringFieldsWithKphOnlyCheckBox;
         private System.Windows.Forms.Label labelSorting;
         private System.Windows.Forms.Label labelCleanup;
@@ -568,5 +732,24 @@
         private System.Windows.Forms.Label labelInterface;
         private System.Windows.Forms.Label labelUpdates;
         private System.Windows.Forms.CheckBox checkUpdatesCheckbox;
+        private System.Windows.Forms.TabPage tabPage3;
+        private System.Windows.Forms.CheckBox activateHttpListenerCheckbox;
+        private System.Windows.Forms.GroupBox groupBoxHTTPS;
+        private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.TextBox listenerHostHttps;
+        private System.Windows.Forms.Label label16;
+        private System.Windows.Forms.Label label17;
+        private System.Windows.Forms.NumericUpDown portNumberHttps;
+        private System.Windows.Forms.Label label18;
+        private System.Windows.Forms.CheckBox activateHttpsListenerCheckbox;
+        private System.Windows.Forms.GroupBox groupBoxHTTP;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.TextBox listenerHostHttp;
+        private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.Label label13;
+        private System.Windows.Forms.NumericUpDown portNumberHttp;
+        private System.Windows.Forms.Label label14;
+        private System.Windows.Forms.LinkLabel instructionsLink;
+        private System.Windows.Forms.Label labelListenerDescription;
     }
 }

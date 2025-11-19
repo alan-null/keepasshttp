@@ -708,13 +708,71 @@ Describe "KeePassHttp protocol" {
     }
 
     Context "Options_ListenerHost:ListenerPort" {
+        BeforeAll {
+            $hostName = "127.0.0.1"
+            $portHttp = 12345
+            $portHttps = 12346
+        }
+
         It "creates listener on custom host/port" {
-            Restart-KeePassTest -Environment @{ "KPH_ListenerHost" = "127.0.0.1" ; "KPH_ListenerPort" = "12345" }
-            $customEndpoint = "http://127.0.0.1:12345"
+            Restart-KeePassTest -Environment @{ "KPH_ListenerHostHttp" = $hostName ; "KPH_ListenerPortHttp" = $portHttp }
+            $customEndpoint = "http://$hostName`:$portHttp"
             $customCtx = New-KphContext -Key $Key -Id $Id -Endpoint $customEndpoint
 
             $r = Invoke-TestAssociate -Context $customCtx
             $r.Success | Should -BeTrue
+        }
+
+        It "creates listener on custom host/port - HTTPS" {
+            # lack of valid SSL cert causes expected failure. We just want to verify that listener is created.
+            Restart-KeePassTest -Environment @{ "KPH_ListenerHostHttps" = $hostName ; "KPH_ListenerPortHttps" = $portHttps; "KPH_ActivateHttpsListener" = "true"; "KPH_ActivateHttpListener" = "false" }
+            $customEndpoint = "https://$hostName`:$portHttps"
+            $customCtx = New-KphContext -Key $Key -Id $Id -Endpoint $customEndpoint
+
+            $sslConnectionIssue = $false
+            try {
+                Invoke-TestAssociate -Context $customCtx | Out-Null
+            }
+            catch [System.Net.Http.HttpRequestException] {
+                $exception = $_.Exception
+                $exception.Message | Should -Match "The SSL connection could not be established"
+                $sslConnectionIssue = $true
+            }
+            $sslConnectionIssue | Should -BeTrue
+        }
+
+        It "creates no HTTPs listener when disabled" {
+            Restart-KeePassTest -Environment @{"KPH_ListenerHostHttps" = $hostName ; "KPH_ListenerPortHttps" = $portHttps; "KPH_ActivateHttpsListener" = "false"; "KPH_ActivateHttpListener" = "false" }
+            $customEndpoint = "https://$hostName`:$portHttps"
+            $customCtx = New-KphContext -Key $Key -Id $Id -Endpoint $customEndpoint
+
+            $sslConnectionIssue = $false
+            try {
+                Invoke-TestAssociate -Context $customCtx | Out-Null
+            }
+            catch [System.Net.Http.HttpRequestException] {
+                $exception = $_.Exception
+                $exception.Message | Should -Be "No connection could be made because the target machine actively refused it. ($hostName`:$portHttps)"
+                $sslConnectionIssue = $true
+            }
+            $sslConnectionIssue | Should -BeTrue
+        }
+
+        It "creates no HTTP listener when disabled" {
+            Restart-KeePassTest -Environment @{"KPH_ListenerHostHttp" = $hostName ; "KPH_ListenerPortHttp" = $portHttp; "KPH_ActivateHttpsListener" = "false"; "KPH_ActivateHttpListener" = "false" }
+            $customEndpoint = "http://$hostName`:$portHttp"
+            $customCtx = New-KphContext -Key $Key -Id $Id -Endpoint $customEndpoint
+
+            $sslConnectionIssue = $false
+            try {
+                Invoke-TestAssociate -Context $customCtx | Out-Null
+            }
+            catch [System.Net.Http.HttpRequestException] {
+                $exception = $_.Exception
+                $exception.Message | Should -Be "No connection could be made because the target machine actively refused it. ($hostName`:$portHttp)"
+                $sslConnectionIssue = $true
+            }
+            $sslConnectionIssue | Should -BeTrue
         }
     }
 

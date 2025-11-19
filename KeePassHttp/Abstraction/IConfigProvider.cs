@@ -13,8 +13,15 @@
         bool ReturnStringFields { get; set; }
         bool ReturnStringFieldsWithKphOnly { get; set; }
         bool SortResultByUsername { get; set; }
-        long ListenerPort { get; set; }
-        string ListenerHost { get; set; }
+
+        bool ActivateHttpListener { get; set; }
+        long ListenerPortHttp { get; set; }
+        string ListenerHostHttp { get; set; }
+
+        bool ActivateHttpsListener { get; set; }
+        long ListenerPortHttps { get; set; }
+        string ListenerHostHttps { get; set; }
+
         bool CheckUpdates { get; set; }
     }
 }

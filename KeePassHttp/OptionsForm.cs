@@ -41,11 +41,21 @@ namespace KeePassHttp
             returnStringFieldsWithKphOnlyCheckBox.Checked = _config.ReturnStringFieldsWithKphOnly;
             SortByUsernameRadioButton.Checked = _config.SortResultByUsername;
             SortByTitleRadioButton.Checked = !_config.SortResultByUsername;
-            portNumber.Value = _config.ListenerPort;
-            hostName.Text = _config.ListenerHost;
-            checkUpdatesCheckbox.Checked = _config.CheckUpdates;
 
-            this.returnStringFieldsCheckbox_CheckedChanged(null, EventArgs.Empty);
+            activateHttpListenerCheckbox.Checked = _config.ActivateHttpListener;
+            listenerHostHttp.Text = _config.ListenerHostHttp;
+            portNumberHttp.Value = _config.ListenerPortHttp;
+            groupBoxHTTP.Enabled = activateHttpListenerCheckbox.Checked;
+
+            activateHttpsListenerCheckbox.Checked = _config.ActivateHttpsListener;
+            listenerHostHttps.Text = _config.ListenerHostHttps;
+            portNumberHttps.Value = _config.ListenerPortHttps;
+            groupBoxHTTPS.Enabled = activateHttpsListenerCheckbox.Checked;
+
+            checkUpdatesCheckbox.Checked = _config.CheckUpdates;
+            returnStringFieldsCheckbox_CheckedChanged(null, EventArgs.Empty);
+
+            instructionsLink.Links.Add(new LinkLabel.Link() { LinkData = "https://alan-null.github.io/keepasshttp/configuration/listener-configuration.html" });
         }
 
         private void okButton_Click(object sender, EventArgs e)
@@ -61,8 +71,15 @@ namespace KeePassHttp
             _config.ReturnStringFields = returnStringFieldsCheckbox.Checked;
             _config.ReturnStringFieldsWithKphOnly = returnStringFieldsWithKphOnlyCheckBox.Checked;
             _config.SortResultByUsername = SortByUsernameRadioButton.Checked;
-            _config.ListenerPort = (int)portNumber.Value;
-            _config.ListenerHost = hostName.Text;
+
+            _config.ActivateHttpListener = activateHttpListenerCheckbox.Checked;
+            _config.ListenerPortHttp = (int)portNumberHttp.Value;
+            _config.ListenerHostHttp = listenerHostHttp.Text;
+
+            _config.ActivateHttpsListener = activateHttpsListenerCheckbox.Checked;
+            _config.ListenerPortHttps = (int)portNumberHttps.Value;
+            _config.ListenerHostHttps = listenerHostHttps.Text;
+
             _config.CheckUpdates = checkUpdatesCheckbox.Checked;
             if (_restartRequired)
             {
@@ -71,6 +88,16 @@ namespace KeePassHttp
                     "Restart required!",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information
+                );
+            }
+
+            if (!_config.ActivateHttpListener && !_config.ActivateHttpsListener)
+            {
+                MessageBox.Show(
+                    "You have no listener configured, so the endpoints won't be available. You should either enable an HTTP or HTTPS listener.",
+                    "Configuration Warning!",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
                 );
             }
         }
@@ -212,12 +239,41 @@ namespace KeePassHttp
 
         private void SetRestartRequired()
         {
-            _restartRequired = (_config.ListenerPort != portNumber.Value) || (_config.ListenerHost != hostName.Text);
+            _restartRequired =
+                _config.ActivateHttpListener != activateHttpListenerCheckbox.Checked ||
+                _config.ListenerPortHttp != portNumberHttp.Value ||
+                _config.ListenerHostHttp != listenerHostHttp.Text ||
+                _config.ActivateHttpsListener != activateHttpsListenerCheckbox.Checked ||
+                _config.ListenerPortHttps != portNumberHttps.Value ||
+                _config.ListenerHostHttps != listenerHostHttps.Text;
         }
 
         private void returnStringFieldsCheckbox_CheckedChanged(object sender, EventArgs e)
         {
-            this.returnStringFieldsWithKphOnlyCheckBox.Enabled = this.returnStringFieldsCheckbox.Checked;
+            returnStringFieldsWithKphOnlyCheckBox.Enabled = returnStringFieldsCheckbox.Checked;
+        }
+
+        private void activateHttpsListenerCheckbox_CheckedChanged(object sender, EventArgs e)
+        {
+            bool enabled = activateHttpsListenerCheckbox.Checked;
+            groupBoxHTTPS.Enabled = enabled;
+            listenerHostHttps.Enabled = enabled;
+            portNumberHttps.Enabled = enabled;
+            SetRestartRequired();
+        }
+
+        private void activateHttpListenerCheckbox_CheckedChanged(object sender, EventArgs e)
+        {
+            bool enabled = activateHttpListenerCheckbox.Checked;
+            groupBoxHTTP.Enabled = enabled;
+            listenerHostHttp.Enabled = enabled;
+            portNumberHttp.Enabled = enabled;
+            SetRestartRequired();
+        }
+
+        private void instructionsLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            System.Diagnostics.Process.Start(e.Link.LinkData as string);
         }
     }
 }

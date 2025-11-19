@@ -19,6 +19,8 @@ Coming soon
 - Extended `set-login` to include extra fields ([#26])
     - Possibility to set "Name" along with "Login" and "Password" for `set-login` API ([#25])
     - Possibility to set and update string fields ([#5])
+- support for HTTPS listener ([#32])
+    - New options section to enable/disable and configure host/port for HTTP and HTTPS listeners
 
 ### Fixed
 
@@ -82,6 +84,7 @@ Latest
 [v1.8.4.2]: https://github.com/alan-null/keepasshttp/compare/v1.8.4.2...v1.8.4.2
 
 <!-- issues -->
+[#32]: https://github.com/alan-null/keepasshttp/issues/32
 [#31]: https://github.com/alan-null/keepasshttp/issues/31
 [#30]: https://github.com/alan-null/keepasshttp/issues/30
 [#29]: https://github.com/alan-null/keepasshttp/issues/29

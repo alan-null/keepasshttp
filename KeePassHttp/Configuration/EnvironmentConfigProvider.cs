@@ -18,8 +18,12 @@ namespace KeePassHttp.Configuration
         private bool _returnStringFields;
         private bool _returnStringFieldsWithKphOnly;
         private bool _sortResultByUsername;
-        private long _listenerPort;
-        private string _listenerHost;
+        private bool _activateHttpListener;
+        private long _listenerPortHttp;
+        private string _listenerHostHttp;
+        private bool _activateHttpsListener; 
+        private long _listenerPortHttps;
+        private string _listenerHostHttps;
         private bool _checkUpdates;
 
         private readonly DefaultConfigProvider _defaults;
@@ -39,8 +43,16 @@ namespace KeePassHttp.Configuration
             _returnStringFields = _defaults.ReturnStringFields;
             _returnStringFieldsWithKphOnly = _defaults.ReturnStringFieldsWithKphOnly;
             _sortResultByUsername = _defaults.SortResultByUsername;
-            _listenerPort = _defaults.ListenerPort;
-            _listenerHost = _defaults.ListenerHost;
+
+            _activateHttpListener = _defaults.ActivateHttpListener;
+            _listenerPortHttp = _defaults.ListenerPortHttp;
+            _listenerHostHttp = _defaults.ListenerHostHttp;
+
+            _activateHttpsListener = _defaults.ActivateHttpsListener; 
+            _listenerPortHttps = _defaults.ListenerPortHttps;
+            _listenerHostHttps = _defaults.ListenerHostHttps;
+            
+            _checkUpdates = _defaults.CheckUpdates;
         }
 
         public bool ReceiveCredentialNotification
@@ -109,16 +121,40 @@ namespace KeePassHttp.Configuration
             set { _sortResultByUsername = value; }
         }
 
-        public long ListenerPort
+        public bool ActivateHttpListener
         {
-            get { long l; return TryGetEnvLong("ListenerPort", out l) ? l : _listenerPort; }
-            set { _listenerPort = value; }
+            get { bool v; return TryGetEnvBool("ActivateHttpsListener", out v) ? v : _activateHttpListener; }
+            set { _activateHttpListener = value; }
         }
 
-        public string ListenerHost
+        public long ListenerPortHttp
         {
-            get { string s; return TryGetEnvString("ListenerHost", out s) ? s : _listenerHost; }
-            set { _listenerHost = value; }
+            get { long l; return TryGetEnvLong("ListenerPortHttp", out l) ? l : _listenerPortHttp; }
+            set { _listenerPortHttp = value; }
+        }
+
+        public string ListenerHostHttp
+        {
+            get { string s; return TryGetEnvString("ListenerHostHttp", out s) ? s : _listenerHostHttp; }
+            set { _listenerHostHttp = value; }
+        }
+
+        public bool ActivateHttpsListener
+        {
+            get { bool v; return TryGetEnvBool("ActivateHttpsListener", out v) ? v : _activateHttpsListener; }
+            set { _activateHttpsListener = value; }
+        }
+
+        public long ListenerPortHttps
+        {
+            get { long l; return TryGetEnvLong("ListenerPortHttps", out l) ? l : _listenerPortHttps; }
+            set { _listenerPortHttps = value; }
+        }
+
+        public string ListenerHostHttps
+        {
+            get { string s; return TryGetEnvString("ListenerHostHttps", out s) ? s : _listenerHostHttps; }
+            set { _listenerHostHttps = value; }
         }
 
         public bool CheckUpdates

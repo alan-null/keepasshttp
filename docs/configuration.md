@@ -122,15 +122,37 @@ Activate the following options only, if you know what you are doing!
   >
   > default: `enabled`
 
-#### **Host:**
-  > Defines which network interface KeePassHttp listens on.
-  > You may need to run KeePass as **administrator** when changing this.
-  > Also ensure your firewall allows external connections if you intend to use this feature.
-  >
-> default: `localhost`
 
-#### **Port:**
-  > The port used by KeePassHttp to communicate with browser extensions.
+## Listener Configuration
+
+#### 🔳 Activate HTTP Listener
+  > KeePassHttp listens for HTTP connections configured by the **Host** and **Port** settings below.
+  >
+  > default: `enabled`
+
+#### **Host:** (HTTP)
+  > Defines which network interface KeePassHttp listens on for HTTP connections.
+  >
+  > default: `localhost`
+
+#### **Port:** (HTTP)
+  > The port used by KeePassHttp to communicate with browser extensions over HTTP.
   > If you change this value, also update it in extensions (chromeIPass, PassIFox, KeePassHTTP-Connector, etc.).
   >
   > default: `19455`
+
+#### 🔲 Activate HTTPS Listener
+  > KeePassHttp listens for HTTPS connections configured by the **Host** and **Port** settings below.
+  >
+  > default: `disabled`
+
+#### **Host:** (HTTPS)
+  > Defines which network interface KeePassHttp listens on for HTTPS connections.
+  >
+  > default: `localhost`
+
+#### **Port:** (HTTPS)
+  > The port used by KeePassHttp to communicate with browser extensions over HTTPS.
+  > If you change this value, also update it in extensions (chromeIPass, PassIFox, KeePassHTTP-Connector, etc.).
+  >
+  > default: `19456`
