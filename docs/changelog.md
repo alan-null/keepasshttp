@@ -25,6 +25,10 @@ Coming soon
 - URL trimmed incorrectly when creating a new entry ([code][base_url_trim])
 
 
+### Changed
+- confirmation message for updating existing entries in `set-login` handler now includes entry name in the title and modified fields in the message body ([#31])
+
+
 ## [v2.1.0.0]
 {: .d-inline-block }
 Latest
@@ -78,6 +82,7 @@ Latest
 [v1.8.4.2]: https://github.com/alan-null/keepasshttp/compare/v1.8.4.2...v1.8.4.2
 
 <!-- issues -->
+[#31]: https://github.com/alan-null/keepasshttp/issues/31
 [#30]: https://github.com/alan-null/keepasshttp/issues/30
 [#29]: https://github.com/alan-null/keepasshttp/issues/29
 [#28]: https://github.com/alan-null/keepasshttp/issues/28

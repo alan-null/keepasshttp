@@ -12,6 +12,10 @@ POST
 
 Creates or updates an entry. See [common-fields](../common-fields).
 
+If [`Always allow updating entries`](../../configuration#-always-allow-updating-entries) option is disabled, updating existing entries will require user confirmation in KeePass.
+Confirmation dialog will show the entry name and modified fields.
+
+
 # Request
 ### Fields:
 

@@ -26,7 +26,11 @@ namespace KeePassHttp.Extensions
                 var dictValue = value as Dictionary<string, string>;
                 if (dictValue != null)
                 {
-                    fieldsToUpdate.Add(property.Name);
+                    if (dictValue.Count != 0)
+                    {
+                        var keys = string.Join(",", dictValue.Keys);
+                        fieldsToUpdate.Add(string.Format("{0}({1})", property.Name, keys));
+                    }
                     continue;
                 }
 

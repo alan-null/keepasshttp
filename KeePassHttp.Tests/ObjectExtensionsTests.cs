@@ -32,11 +32,11 @@ namespace KeePassHttp.Tests
         }
 
         [Fact]
-        public void EmptyDictionary_Included()
+        public void EmptyDictionary_Excludedk()
         {
             var model = new { Dict = new Dictionary<string, string>() };
             var result = model.GetNonEmptyFields();
-            Assert.Contains("Dict", result);
+            Assert.Empty(result);
         }
 
         [Fact]
@@ -44,7 +44,15 @@ namespace KeePassHttp.Tests
         {
             var model = new { Dict = new Dictionary<string, string> { { "a", "b" } } };
             var result = model.GetNonEmptyFields();
-            Assert.Equal(new[] { "Dict" }, result);
+            Assert.Equal(new[] { "Dict(a)" }, result);
+        }
+
+        [Fact]
+        public void NonEmptyDictionary_Included_MultipleKeys()
+        {
+            var model = new { Dict = new Dictionary<string, string> { { "a", "v1" }, { "b", "v2" } } };
+            var result = model.GetNonEmptyFields();
+            Assert.Equal(new[] { "Dict(a,b)" }, result);
         }
 
         [Fact]
@@ -87,10 +95,11 @@ namespace KeePassHttp.Tests
                 O2 = new object()
             };
             var result = model.GetNonEmptyFields();
-            var expected = new[] { "S1", "S2", "D1", "D2", "I1", "O2" };
+            var expected = new[] { "S1", "S2", "D2(k)", "I1", "O2" };
             Assert.Equal(expected.OrderBy(x => x), result.OrderBy(x => x));
             Assert.DoesNotContain("I2", result);
             Assert.DoesNotContain("O1", result);
+            Assert.DoesNotContain("D1", result);
         }
     }
 }

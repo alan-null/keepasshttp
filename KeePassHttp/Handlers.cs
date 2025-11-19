@@ -940,7 +940,7 @@ namespace KeePassHttp
             {
                 host.MainWindow.Activate();
                 DialogResult result;
-                var modifiedFieldsMessage = string.Join(", ", model.GetNonEmptyFields());
+                var modifiedFieldsMessage = string.Join(", ", model.GetNonEmptyFields().Except(new string[] { "Uuid" }));
                 string title = string.Format("Update Entry (AES Key: '{0}')", keyId);
                 string message = string.Format("Do you want to update the information for '{0}'?\nModified fields: {1}", u, modifiedFieldsMessage);
                 result = MessageBox.Show(
@@ -949,9 +949,8 @@ namespace KeePassHttp
                     title,
                     MessageBoxButtons.YesNo,
                     MessageBoxIcon.Question,
-                    MessageBoxDefaultButton.Button1,
-                    MessageBoxOptions.DefaultDesktopOnly
-                );
+                    MessageBoxDefaultButton.Button1
+                 );
 
                 if (result == DialogResult.Yes)
                 {
