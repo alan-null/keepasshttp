@@ -8,10 +8,10 @@ toc_title: "Versions:"
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [v2.2.0.0]
 {: .d-inline-block }
-Coming soon
-{: .label .label-yellow }
+Latest
+{: .label .label-green }
 
 ### Added
 
@@ -78,7 +78,8 @@ Latest
 - Legacy release of **KeePassHttp** by [Perry Nguyen].
 
 <!-- versions -->
-[unreleased]: https://github.com/alan-null/keepasshttp/compare/v2.1.0.0...HEAD
+[unreleased]: https://github.com/alan-null/keepasshttp/compare/v2.2.0.0...HEAD
+[v2.2.0.0]: https://github.com/alan-null/keepasshttp/compare/v2.1.0.0...v2.2.0.0
 [v2.1.0.0]: https://github.com/alan-null/keepasshttp/compare/v2.0.0.0...v2.1.0.0
 [v2.0.0.0]: https://github.com/alan-null/keepasshttp/compare/v1.8.4.2...v2.0.0.0
 [v1.8.4.2]: https://github.com/alan-null/keepasshttp/compare/v1.8.4.2...v1.8.4.2
