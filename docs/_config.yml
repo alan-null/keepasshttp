@@ -5,7 +5,9 @@ repository: dummy/dummy
 remote_theme: just-the-docs/just-the-docs
 plugins:
 - jekyll-remote-theme
+- jekyll-sitemap
 
+permalink: pretty
 nav_external_links:
   - title: Latest Release
     url: https://github.com/alan-null/keepasshttp/releases/latest
