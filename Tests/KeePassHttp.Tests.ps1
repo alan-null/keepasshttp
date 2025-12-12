@@ -250,7 +250,7 @@ Describe "KeePassHttp protocol" {
     Context "GET_ALL_LOGINS" {
         It "get-all-logins returns all expected entries (includes google-user)" {
             $all = Invoke-GetAllLogins -Context $Context
-            $all.Entries.Count | Should -BeExactly 15
+            $all.Entries.Count | Should -BeExactly 16
             $found = $false
             foreach ($e in $all.Entries) {
                 $name = Unprotect-Field -Context $Context -Cipher $e.Name -Nonce $all.Nonce
@@ -278,6 +278,256 @@ Describe "KeePassHttp protocol" {
             (Unprotect-Field -Context $Context -Cipher $all.Entries[0].Group.Name -Nonce $all.Nonce) | Should -Be "test"
             (Unprotect-Field -Context $Context -Cipher $all.Entries[0].Uuid -Nonce $all.Nonce) | Should -Be "34697A408A5B41C09F36897D623ECB31"
             (Unprotect-Field -Context $Context -Cipher $all.Entries[0].Group.Uuid -Nonce $all.Nonce) | Should -Be "4CEFB31811DDFF4C9346DDECE64EF394"
+        }
+    }
+
+    Context "GET_LOGINS_CUSTOM_SEARCH" {
+        # SearchInTitles
+        It "returns entries matching search string in usernames - SearchInTitles: false" {
+            $r = Invoke-GetLoginsCustomSearch -Context $Context -SearchString 'ABC' -SearchInTitles $false
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 0
+        }
+
+        It "returns entries matching search string in usernames - SearchInTitles: true" {
+            $r = Invoke-GetLoginsCustomSearch -Context $Context -SearchString 'ABC' -SearchInTitles $true
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 1
+
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[0].Name -Nonce $r.Nonce) | Should -Be "ABC"
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[0].Login -Nonce $r.Nonce) | Should -Be "user1"
+        }
+
+        # SearchInUserNames
+        It "returns entries matching search string in names - SearchInUserNames: false" {
+            $r = Invoke-GetLoginsCustomSearch -Context $Context -SearchString 'user1' -SearchInUserNames $false
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 0
+        }
+
+        It "returns entries matching search string in names - SearchInUserNames: true" {
+            $r = Invoke-GetLoginsCustomSearch -Context $Context -SearchString 'user1' -SearchInUserNames $true
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 2
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[0].Name -Nonce $r.Nonce) | Should -Be "SubPath1"
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[0].Login -Nonce $r.Nonce) | Should -Be "user1"
+
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[1].Name -Nonce $r.Nonce) | Should -Be "ABC"
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[1].Login -Nonce $r.Nonce) | Should -Be "user1"
+        }
+
+        # SearchInPasswords
+        It "returns entries matching search string in passwords - SearchInPasswords: true" {
+            $r = Invoke-GetLoginsCustomSearch -Context $Context -SearchString 'sf-pass' -SearchInPasswords $true
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 1
+
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[0].Name -Nonce $r.Nonce) | Should -Be "StringFields"
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[0].Password -Nonce $r.Nonce) | Should -Be "sf-pass"
+        }
+
+        It "returns entries matching search string in passwords - SearchInPasswords: false" {
+            $r = Invoke-GetLoginsCustomSearch -Context $Context -SearchString 'sf-pass' -SearchInPasswords $false
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 0
+        }
+
+
+        # SearchInUrls
+        It "returns entries matching search string in urls - SearchInUrls: true" {
+            $r = Invoke-GetLoginsCustomSearch -Context $Context -SearchString 'http://www.sort.example' -SearchInUrls $true
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 2
+
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[0].Name -Nonce $r.Nonce) | Should -Be "ABC"
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[1].Name -Nonce $r.Nonce) | Should -Be "XYZ"
+        }
+
+        It "returns entries matching search string in urls - SearchInUrls: false" {
+            $r = Invoke-GetLoginsCustomSearch -Context $Context -SearchString 'http://www.sort.example' -SearchInUrls $false
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 0
+        }
+
+        # SearchInNotes
+        It "returns entries matching search string in notes - SearchInNotes: true" {
+            $r = Invoke-GetLoginsCustomSearch -Context $Context -SearchString 'sf-note' -SearchInNotes $true
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 1
+
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[0].Name -Nonce $r.Nonce) | Should -Be "StringFields"
+        }
+
+        It "returns entries matching search string in notes - SearchInNotes: false" {
+            $r = Invoke-GetLoginsCustomSearch -Context $Context -SearchString 'sf-note' -SearchInNotes $false
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 0
+        }
+
+        # SearchInOther
+        It "returns entries matching search string in other fields - SearchInOther: true" {
+            $r = Invoke-GetLoginsCustomSearch -Context $Context -SearchString 'V1' -SearchInOther $true
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 1
+
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[0].Name -Nonce $r.Nonce) | Should -Be "StringFields"
+        }
+
+        It "returns entries matching search string in other fields - SearchInOther: false" {
+            $r = Invoke-GetLoginsCustomSearch -Context $Context -SearchString 'V1' -SearchInOther $false
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 0
+        }
+
+        # SearchInStringNames
+        It "returns entries matching search string in string field names - SearchInStringNames: true" {
+            $r = Invoke-GetLoginsCustomSearch -Context $Context -SearchString 'KPH: F1' -SearchInStringNames $true
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 1
+
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[0].Name -Nonce $r.Nonce) | Should -Be "StringFields"
+        }
+
+        It "returns entries matching search string in string field names - SearchInStringNames: false" {
+            $r = Invoke-GetLoginsCustomSearch -Context $Context -SearchString 'KPH: F1' -SearchInStringNames $false
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 0
+        }
+
+        # SearchInTags
+        It "returns entries matching search string in tags - SearchInTags: true" {
+            $r = Invoke-GetLoginsCustomSearch -Context $Context -SearchString '#sort' -SearchInTags $true
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 1
+
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[0].Name -Nonce $r.Nonce) | Should -Be "ABC"
+        }
+
+        It "returns entries matching search string in tags - SearchInTags: false" {
+            $r = Invoke-GetLoginsCustomSearch -Context $Context -SearchString '#sort' -SearchInTags $false
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 0
+        }
+
+        # SearchInUuids
+        It "returns entries matching search string in uuids - SearchInUuids: true" {
+            $r = Invoke-GetLoginsCustomSearch -Context $Context -SearchString '8AA5' -SearchInUuids $true
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 1
+
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[0].Name -Nonce $r.Nonce) | Should -Be "ABC"
+        }
+
+        It "returns entries matching search string in uuids - SearchInUuids: false" {
+            $r = Invoke-GetLoginsCustomSearch -Context $Context -SearchString '8AA5' -SearchInUuids $false
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 0
+        }
+
+        # SearchInGroupPaths
+        It "returns entries matching search string in group paths - SearchInGroupPaths: true" {
+            $r = Invoke-GetLoginsCustomSearch -Context $Context -SearchString 'sorting' -SearchInGroupPaths $true
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 2
+
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[0].Name -Nonce $r.Nonce) | Should -Be "ABC"
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[1].Name -Nonce $r.Nonce) | Should -Be "XYZ"
+        }
+
+        It "returns entries matching search string in group paths - SearchInGroupPaths: false" {
+            $r = Invoke-GetLoginsCustomSearch -Context $Context -SearchString 'sorting' -SearchInGroupPaths $false
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 0
+        }
+
+        # SearchInGroupNames
+        It "returns entries matching search string in group names - SearchInGroupNames: true" {
+            $r = Invoke-GetLoginsCustomSearch -Context $Context -SearchString 'test' -SearchInGroupNames $true
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 13
+
+            $r = Invoke-GetLoginsCustomSearch -Context $Context -SearchString 'sorting' -SearchInGroupNames $true
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 2
+
+
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[0].Name -Nonce $r.Nonce) | Should -Be "ABC"
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[1].Name -Nonce $r.Nonce) | Should -Be "XYZ"
+        }
+
+        It "returns entries matching search string in group names - SearchInGroupNames: false" {
+            $r = Invoke-GetLoginsCustomSearch -Context $Context -SearchString 'sorting' -SearchInGroupNames $false
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 0
+        }
+
+        # RespectEntrySearchingDisabled
+        It "returns entries when RespectEntrySearchingDisabled: false" {
+            $r = Invoke-GetLoginsCustomSearch -Context $Context -SearchString 'hidden' -RespectEntrySearchingDisabled $false
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 1
+
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[0].Name -Nonce $r.Nonce) | Should -Be "hidden"
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[0].Login -Nonce $r.Nonce) | Should -Be "secret"
+        }
+
+        It "returns no entries when RespectEntrySearchingDisabled: true" {
+            $r = Invoke-GetLoginsCustomSearch -Context $Context -SearchString 'hidden' -RespectEntrySearchingDisabled $true
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 0
+        }
+
+        # ExcludeExpired
+        It "returns no expired entries when ExcludeExpired: true" {
+            $r = Invoke-GetLoginsCustomSearch -Context $Context -SearchString 'expired' -ExcludeExpired $true -SearchInUrls $false
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 0
+        }
+
+        It "returns expired entries when ExcludeExpired: false" {
+            $r = Invoke-GetLoginsCustomSearch -Context $Context -SearchString 'expired' -ExcludeExpired $false -SearchInUrls $false
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 1
+
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[0].Name -Nonce $r.Nonce) | Should -Be "expired"
+        }
+
+        # SearchMode
+        It "returns entries when SearchMode: Simple" {
+            $r = Invoke-GetLoginsCustomSearch -Context $Context -SearchString 'ABC' -SearchMode 'Simple'
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 1
+
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[0].Name -Nonce $r.Nonce) | Should -Be "ABC"
+        }
+
+        It "returns error for invalid regular expression" {
+            $r = Invoke-GetLoginsCustomSearch -Context $Context -SearchString '*BC' -SearchMode 'Regular'
+            $r.Success | Should -BeFalse
+            $r.Error | Should -Be 'Invalid regular expression: *BC'
+        }
+
+        It "returns entries when SearchMode: Regular" {
+            $r = Invoke-GetLoginsCustomSearch -Context $Context -SearchString '.*BC' -SearchMode 'Regular'
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 1
+
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[0].Name -Nonce $r.Nonce) | Should -Be "ABC"
+        }
+
+        # ComparisonMode
+        It "returns entries when ComparisonMode: OrdinalIgnoreCase" {
+            $r = Invoke-GetLoginsCustomSearch -Context $Context -SearchString 'aBc' -SearchMode 'Simple' -ComparisonMode 'OrdinalIgnoreCase'
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 1
+
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[0].Name -Nonce $r.Nonce) | Should -Be "ABC"
+        }
+
+        It "returns no entries when ComparisonMode: Ordinal" {
+            $r = Invoke-GetLoginsCustomSearch -Context $Context -SearchString 'abc' -SearchMode 'Simple' -ComparisonMode 'Ordinal'
+            $r.Success | Should -BeTrue
+            $r.Entries.Count | Should -Be 0
         }
     }
 

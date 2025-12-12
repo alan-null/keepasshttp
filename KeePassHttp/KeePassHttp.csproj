@@ -56,6 +56,7 @@
       <DependentUpon>AccessControlForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Attributes\RequiredAttribute.cs" />
+    <Compile Include="Extensions\RequestExtensions.cs" />
     <Compile Include="Extensions\PwEntryExtensions.cs" />
     <Compile Include="Extensions\DictionaryExtensions.cs" />
     <Compile Include="Extensions\ObjectExtensions.cs" />
@@ -65,6 +66,7 @@
     <Compile Include="Model\Entry\CreateEntryModel.cs.cs" />
     <Compile Include="Model\Entry\EntryQuery.cs" />
     <Compile Include="Model\Request\GetLoginByUuidRequest.cs" />
+    <Compile Include="Model\Request\GetLoginsCustomSearchRequest.cs" />
     <Compile Include="Model\Response\GeneratePasswordResponse.cs" />
     <Compile Include="Model\Response\GetAllLoginsResponse.cs" />
     <Compile Include="Model\Response\GetLoginByUuidResponse.cs" />
@@ -73,6 +75,7 @@
     <Compile Include="Model\Response\AssociateResponse.cs" />
     <Compile Include="Model\Response\BaseResponse.cs" />
     <Compile Include="Model\Response\EntriesResponse.cs" />
+    <Compile Include="Model\Response\GetLoginsCustomSearchResponse.cs" />
     <Compile Include="Model\Response\GetLoginsResponse.cs" />
     <Compile Include="Model\Response\SetLoginResponse.cs" />
     <Compile Include="Model\Response\TestAssociateResponse.cs" />

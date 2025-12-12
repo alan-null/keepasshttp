@@ -201,6 +201,60 @@ function Invoke-GetAllLogins {
     Invoke-RestMethod -Uri $Context.Endpoint -Method Post -ContentType "application/json" -Body $body
 }
 
+function Invoke-GetLoginsCustomSearch {
+    param(
+        [Parameter(Mandatory)][psobject]$Context,
+        [Parameter(Mandatory)][string]$SearchString,
+        [bool]$SearchInTitles,
+        [bool]$SearchInUserNames,
+        [bool]$SearchInPasswords,
+        [bool]$SearchInUrls,
+        [bool]$SearchInNotes,
+        [bool]$SearchInOther,
+        [bool]$SearchInStringNames,
+        [bool]$SearchInTags,
+        [bool]$SearchInUuids,
+        [bool]$SearchInGroupPaths,
+        [bool]$SearchInGroupNames,
+        [bool]$SearchInHistory,
+        [ValidateSet('Simple', 'Regular')][string]$SearchMode,
+        [ValidateSet('CurrentCulture', 'CurrentCultureIgnoreCase', 'InvariantCulture', 'InvariantCultureIgnoreCase', 'Ordinal', 'OrdinalIgnoreCase')][string]$ComparisonMode,
+        [bool]$ExcludeExpired,
+        [bool]$RespectEntrySearchingDisabled
+    )
+
+    $p = New-VerifierPair -Context $Context
+
+    $req = @{
+        RequestType = "get-logins-custom-search"
+        Id          = $Context.Id
+        Nonce       = $p.Nonce
+        Verifier    = $p.Verifier
+        SearchString = Protect-Field -Context $Context -PlainText $SearchString -Nonce $p.Nonce
+    }
+
+    # Only include optional flags if the caller provided them
+    foreach ($name in @(
+        'SearchInTitles','SearchInUserNames','SearchInPasswords','SearchInUrls','SearchInNotes',
+        'SearchInOther','SearchInStringNames','SearchInTags','SearchInUuids','SearchInGroupPaths',
+        'SearchInGroupNames','SearchInHistory','ExcludeExpired','RespectEntrySearchingDisabled')) {
+        if ($PSBoundParameters.ContainsKey($name)) {
+            $req[$name] = $PSBoundParameters[$name]
+        }
+    }
+
+    if ($PSBoundParameters.ContainsKey('SearchMode')) {
+        $req['SearchMode'] = $SearchMode
+    }
+
+    if ($PSBoundParameters.ContainsKey('ComparisonMode')) {
+        $req['ComparisonMode'] = $ComparisonMode
+    }
+
+    $json = $req | ConvertTo-Json
+    Invoke-RestMethod -Uri $Context.Endpoint -Method Post -ContentType "application/json" -Body $json
+}
+
 function Invoke-SetLogin {
     param(
         [Parameter(Mandatory)][psobject]$Context,
@@ -246,5 +300,5 @@ function Invoke-SetLogin {
 
 Export-ModuleMember -Function `
     New-KphContext, New-Nonce, New-VerifierPair, `
-    Invoke-TestAssociate, Invoke-GetLogins, Invoke-GetLoginsByName, Invoke-GetLoginByUuid, Invoke-GetLoginsCount, Invoke-GetAllLogins, Invoke-GeneratePassword, Invoke-SetLogin, `
+    Invoke-TestAssociate, Invoke-GetLogins, Invoke-GetLoginsByName, Invoke-GetLoginByUuid, Invoke-GetLoginsCount, Invoke-GetAllLogins, Invoke-GetLoginsCustomSearch, Invoke-GeneratePassword, Invoke-SetLogin, `
     Protect-Field, Unprotect-Field

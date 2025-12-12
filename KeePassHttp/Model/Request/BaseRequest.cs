@@ -43,6 +43,7 @@ namespace KeePassHttp.Model.Request
             switch (type)
             {
                 case RequestTypes.GET_LOGINS: request = new GetLoginsRequest(); break;
+                case RequestTypes.GET_LOGINS_CUSTOM_SEARCH: request = new GetLoginsCustomSearchRequest(); break;
                 case RequestTypes.GET_LOGINS_COUNT: request = new GetLoginsCountRequest(); break;
                 case RequestTypes.GET_LOGINS_BY_NAMES: request = new GetLoginsByNamesRequest(); break;
                 case RequestTypes.GET_LOGIN_BY_UUID: request = new GetLoginByUuidRequest(); break;

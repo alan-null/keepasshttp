@@ -8,6 +8,16 @@ toc_title: "Versions:"
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+{: .d-inline-block }
+Coming soon
+{: .label .label-yellow }
+
+### Added
+
+- New handler `get-logins-custom-search` to perform KeePass "Find" with custom search options ([#34])
+
+
 ## [v2.2.0.0]
 {: .d-inline-block }
 Latest
@@ -85,6 +95,7 @@ Latest
 [v1.8.4.2]: https://github.com/alan-null/keepasshttp/compare/v1.8.4.2...v1.8.4.2
 
 <!-- issues -->
+[#34]: https://github.com/alan-null/keepasshttp/issues/34
 [#32]: https://github.com/alan-null/keepasshttp/issues/32
 [#31]: https://github.com/alan-null/keepasshttp/issues/31
 [#30]: https://github.com/alan-null/keepasshttp/issues/30

@@ -19,6 +19,7 @@ using KeePassHttp.Extensions;
 using KeePassHttp.Model.Request;
 using KeePassHttp.Model.Response;
 using KeePassHttp.Model.Entry;
+using System.Text.RegularExpressions;
 
 namespace KeePassHttp
 {
@@ -344,7 +345,6 @@ namespace KeePassHttp
 
         private BaseResponse GetLoginsHandler(BaseRequest br, Aes aes)
         {
-
             if (!VerifyRequest(br, aes))
             {
                 return new ErrorResponse { RequestType = RequestTypes.GET_LOGINS, Error = "Couldn't verify request" };
@@ -471,6 +471,66 @@ namespace KeePassHttp
 
             CompleteGetLoginsResult(itemsList, configOpt, resp, r.Id, host, aes);
             return resp;
+        }
+
+        private BaseResponse GetLoginsCustomSearchHandler(BaseRequest br, Aes aes)
+        {
+            if (!VerifyRequest(br, aes))
+            {
+                return new ErrorResponse { RequestType = RequestTypes.GET_LOGINS_CUSTOM_SEARCH, Error = "Couldn't verify request" };
+            }
+
+            var resp = new GetLoginsCustomSearchResponse();
+            var r = br as GetLoginsCustomSearchRequest;
+
+            int searchMode = (int)r.SearchMode;
+            if (searchMode < 1 || searchMode > 3)
+            {
+                return new ErrorResponse { RequestType = RequestTypes.GET_LOGINS_CUSTOM_SEARCH, Error = "Invalid search mode" };
+            }
+
+            string searchString = null;
+            var listResult = new List<PwEntryDatabase>();
+            if (r.SearchString != null)
+            {
+                searchString = CryptoTransform(r.SearchString, true, false, aes, CMode.DECRYPT);
+            }
+
+            if (r.SearchMode == PwSearchMode.Regular && !ValidateRegex(searchString))
+            {
+                return new ErrorResponse { RequestType = RequestTypes.GET_LOGINS_CUSTOM_SEARCH, Error = "Invalid regular expression: " + searchString };
+            }
+
+            var parms = r.BuildSearchParameters();
+            List<PwDatabase> listDatabases = new List<PwDatabase>();
+            var configOpt = GetConfigProvider();
+
+            foreach (PwDatabase db in GetDatabases(configOpt))
+            {
+                parms.SearchString = searchString;
+                var listEntries = new PwObjectList<PwEntry>();
+                db.RootGroup.SearchEntries(parms, listEntries);
+                foreach (var le in listEntries)
+                {
+                    listResult.Add(new PwEntryDatabase(le, db));
+                }
+            }
+
+            CompleteGetLoginsResult(listResult, configOpt, resp, r.Id, null, aes);
+            return resp;
+        }
+
+        private static bool ValidateRegex(string searchString)
+        {
+            try
+            {
+                new Regex(searchString);
+            }
+            catch (ArgumentException)
+            {
+                return false;
+            }
+            return true;
         }
 
         private BaseResponse GetLoginsByNamesHandler(BaseRequest br, Aes aes)

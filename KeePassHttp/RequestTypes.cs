@@ -3,6 +3,7 @@
     public static class RequestTypes
     {
         public const string GET_LOGINS = "get-logins";
+        public const string GET_LOGINS_CUSTOM_SEARCH = "get-logins-custom-search";
         public const string GET_LOGINS_COUNT = "get-logins-count";
         public const string GET_LOGINS_BY_NAMES = "get-logins-by-names";
         public const string GET_LOGIN_BY_UUID = "get-login-by-uuid";

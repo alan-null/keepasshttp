@@ -354,6 +354,9 @@ namespace KeePassHttp
                         case RequestTypes.GET_LOGINS:
                             response = GetLoginsHandler(r, aes);
                             break;
+                        case RequestTypes.GET_LOGINS_CUSTOM_SEARCH:
+                            response = GetLoginsCustomSearchHandler(r, aes);
+                            break;
                         case RequestTypes.GET_LOGINS_COUNT:
                             response = GetLoginsCountHandler(r, aes);
                             break;
