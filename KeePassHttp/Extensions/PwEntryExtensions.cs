@@ -63,7 +63,7 @@ namespace KeePassHttp.Extensions
             e.Touch(true);
         }
 
-        private static bool SetIfChanged(PwEntry entry, string key, string newValue)
+        private static bool SetIfChanged(PwEntry entry, string key, string newValue, bool protect = false)
         {
             if (newValue == null)
             {
@@ -75,7 +75,7 @@ namespace KeePassHttp.Extensions
             {
                 return false;
             }
-            entry.Strings.Set(key, new ProtectedString(false, newValue));
+            entry.Strings.Set(key, new ProtectedString(protect, newValue));
             return true;
         }
 
@@ -84,8 +84,8 @@ namespace KeePassHttp.Extensions
             bool modified = false;
 
             modified |= SetIfChanged(entry, PwDefs.TitleField, model.Title);
-            modified |= SetIfChanged(entry, PwDefs.UserNameField, model.Username);
-            modified |= SetIfChanged(entry, PwDefs.PasswordField, model.Password);
+            modified |= SetIfChanged(entry, PwDefs.UserNameField, model.Username, protect: true);
+            modified |= SetIfChanged(entry, PwDefs.PasswordField, model.Password, protect: true);
             modified |= SetIfChanged(entry, PwDefs.UrlField, model.Url);
 
             bool hasConfigUpdate = model.Config != null;
@@ -141,7 +141,9 @@ namespace KeePassHttp.Extensions
                     }
                     else
                     {
-                        if (SetIfChanged(entry, sf.Key, sf.Value))
+                        var existingField = entry.Strings.Get(sf.Key);
+                        bool protectField = existingField != null ? existingField.IsProtected : false;
+                        if (SetIfChanged(entry, sf.Key, sf.Value, protectField))
                         {
                             modified = true;
                         }
