@@ -8,14 +8,23 @@ toc_title: "Versions:"
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [v2.3.0.0]
 {: .d-inline-block }
-Coming soon
-{: .label .label-yellow }
+Latest
+{: .label .label-green }
+
 
 ### Added
 
 - New handler `get-logins-custom-search` to perform KeePass "Find" with custom search options ([#34])
+- Encrypt-then-MAC - add HMAC-SHA256 for authenticated encryption ([#39])
+
+### Fixed
+- Password fields stored as unprotected strings in KeePass memory ([#37])
+
+### Changed
+
+- Configurable listener host - validation and warning for non-loopback addresses ([#38])
 
 
 ## [v2.2.0.0]
@@ -88,13 +97,17 @@ Latest
 - Legacy release of **KeePassHttp** by [Perry Nguyen].
 
 <!-- versions -->
-[unreleased]: https://github.com/alan-null/keepasshttp/compare/v2.2.0.0...HEAD
+[unreleased]: https://github.com/alan-null/keepasshttp/compare/v2.3.0.0...HEAD
+[v2.3.0.0]: https://github.com/alan-null/keepasshttp/compare/v2.2.0.0...v2.3.0.0
 [v2.2.0.0]: https://github.com/alan-null/keepasshttp/compare/v2.1.0.0...v2.2.0.0
 [v2.1.0.0]: https://github.com/alan-null/keepasshttp/compare/v2.0.0.0...v2.1.0.0
 [v2.0.0.0]: https://github.com/alan-null/keepasshttp/compare/v1.8.4.2...v2.0.0.0
 [v1.8.4.2]: https://github.com/alan-null/keepasshttp/compare/v1.8.4.2...v1.8.4.2
 
 <!-- issues -->
+[#39]: https://github.com/alan-null/keepasshttp/issues/39
+[#38]: https://github.com/alan-null/keepasshttp/issues/38
+[#37]: https://github.com/alan-null/keepasshttp/issues/37
 [#34]: https://github.com/alan-null/keepasshttp/issues/34
 [#32]: https://github.com/alan-null/keepasshttp/issues/32
 [#31]: https://github.com/alan-null/keepasshttp/issues/31
