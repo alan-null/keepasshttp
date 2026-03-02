@@ -28,9 +28,6 @@ Latest
 
 
 ## [v2.2.0.0]
-{: .d-inline-block }
-Latest
-{: .label .label-green }
 
 ### Added
 
@@ -51,9 +48,6 @@ Latest
 
 
 ## [v2.1.0.0]
-{: .d-inline-block }
-Latest
-{: .label .label-green }
 
 ### Added
 
@@ -98,11 +92,11 @@ Latest
 
 <!-- versions -->
 [unreleased]: https://github.com/alan-null/keepasshttp/compare/v2.3.0.0...HEAD
-[v2.3.0.0]: https://github.com/alan-null/keepasshttp/compare/v2.2.0.0...v2.3.0.0
-[v2.2.0.0]: https://github.com/alan-null/keepasshttp/compare/v2.1.0.0...v2.2.0.0
-[v2.1.0.0]: https://github.com/alan-null/keepasshttp/compare/v2.0.0.0...v2.1.0.0
-[v2.0.0.0]: https://github.com/alan-null/keepasshttp/compare/v1.8.4.2...v2.0.0.0
-[v1.8.4.2]: https://github.com/alan-null/keepasshttp/compare/v1.8.4.2...v1.8.4.2
+[v2.3.0.0]: https://github.com/alan-null/keepasshttp/releases/tag/v2.3.0.0
+[v2.2.0.0]: https://github.com/alan-null/keepasshttp/releases/tag/v2.2.0.0
+[v2.1.0.0]: https://github.com/alan-null/keepasshttp/releases/tag/v2.1.0.0
+[v2.0.0.0]: https://github.com/alan-null/keepasshttp/releases/tag/v2.0.0.0
+[v1.8.4.2]: https://github.com/alan-null/keepasshttp/releases/tag/v1.8.4.2
 
 <!-- issues -->
 [#39]: https://github.com/alan-null/keepasshttp/issues/39
