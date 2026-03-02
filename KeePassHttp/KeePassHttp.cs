@@ -245,11 +245,12 @@ namespace KeePassHttp
 
             if (httpSupported)
             {
+                IConfigProvider configOpt = null;
                 try
                 {
                     listener = new HttpListener();
 
-                    var configOpt = GetConfigProvider();
+                    configOpt = GetConfigProvider();
 
                     if (configOpt.ActivateHttpListener)
                     {
@@ -274,12 +275,32 @@ namespace KeePassHttp
                 }
                 catch (HttpListenerException e)
                 {
-                    MessageBox.Show(host.MainWindow,
+                    if (e.ErrorCode == 5) // ERROR_ACCESS_DENIED
+                    {
+                        string msg = string.Format(
+                            "Access denied starting HttpListener.\n\n" +
+                            "Your current listener configuration may expose your KeePass credentials to other network interfaces.\n\n" +
+                            "Configured listeners:\n  HTTP:     {0}:{1}\n  HTTPS:    {2}:{3}\n\n" +
+                            "Running KeePass as administrator may resolve this error if the listener requires elevated privileges.\n\n" +
+                            "If you do not intend to expose the listener, set the host to 'localhost' in the KeePassHttp options.",
+                            configOpt.ListenerHostHttp, configOpt.ListenerPortHttp,
+                            configOpt.ListenerHostHttps, configOpt.ListenerPortHttps);
+
+                        MessageBox.Show(host.MainWindow,
+                            msg,
+                            "Unable to start HttpListener (Access Denied)",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error
+                            );
+                    }
+                    else
+                    {
+                        MessageBox.Show(host.MainWindow,
                         "Unable to start HttpListener!\nDo you really have only one installation of KeePassHttp in your KeePass-directory?\n\n" + e,
                         "Unable to start HttpListener",
                         MessageBoxButtons.OK,
-                        MessageBoxIcon.Error
-                    );
+                        MessageBoxIcon.Error);
+                    }
                 }
             }
             else

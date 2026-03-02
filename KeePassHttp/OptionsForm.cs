@@ -58,8 +58,116 @@ namespace KeePassHttp
             instructionsLink.Links.Add(new LinkLabel.Link() { LinkData = "https://alan-null.github.io/keepasshttp/configuration/listener-configuration.html" });
         }
 
+        private static readonly HashSet<string> SafeHosts = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "localhost", "127.0.0.1", "::1", "[::1]"
+        };
+
+        /// <summary>
+        /// Validates a listener host value. Returns true if safe or user-confirmed.
+        /// </summary>
+        private bool ValidateListenerHost(string host, string listenerLabel)
+        {
+            if (string.IsNullOrWhiteSpace(host))
+            {
+                return true; // will use default
+            }
+
+            host = host.Trim();
+
+            if (SafeHosts.Contains(host))
+            {
+                return true;
+            }
+
+            string warning;
+            if (host == "*" || host == "+")
+            {
+                warning = string.Format(
+                    "WARNING: Setting the {0} host to '{1}' will expose your KeePass credentials " +
+                    "to ALL network interfaces, making them accessible from other computers.\n\n" +
+                    "This is a serious security risk.\n\n" +
+                    "Are you sure you want to continue?",
+                    listenerLabel, host);
+            }
+            else
+            {
+                warning = string.Format(
+                    "WARNING: Setting the {0} host to '{1}' (non-localhost) may expose your " +
+                    "KeePass credentials to other computers on the network.\n\n" +
+                    "Are you sure you want to continue?",
+                    listenerLabel, host);
+            }
+
+            var result = MessageBox.Show(
+                this, warning, "Security Warning",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning,
+                MessageBoxDefaultButton.Button2);
+
+            return result == DialogResult.Yes;
+        }
+
+        private bool ValidateHttpListenerHostChange()
+        {
+            bool listenerDisabled = !activateHttpListenerCheckbox.Checked;
+            if (listenerDisabled)
+            {
+                return true;
+            }
+
+            var newHost = listenerHostHttp.Text;
+            if (newHost == _config.ListenerHostHttp)
+            {
+                return true;
+            }
+
+            if (ValidateListenerHost(newHost, "HTTP"))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool ValidateHttpsListenerHostChange()
+        {
+            bool listenerDisabled = !activateHttpsListenerCheckbox.Checked;
+            if (listenerDisabled)
+            {
+                return true;
+            }
+
+            var newHost = listenerHostHttps.Text;
+            if (newHost == _config.ListenerHostHttps)
+            {
+                return true;
+            }
+
+            if (ValidateListenerHost(newHost, "HTTPS"))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         private void okButton_Click(object sender, EventArgs e)
         {
+            if (!ValidateHttpListenerHostChange())
+            {
+                listenerHostHttp.Text = Constants.Host.DEFAULT_HOST;
+                DialogResult = DialogResult.None;
+                return;
+            }
+
+            if (!ValidateHttpsListenerHostChange())
+            {
+                listenerHostHttps.Text = Constants.Host.DEFAULT_HOST;
+                DialogResult = DialogResult.None;
+                return;
+            }
+
             _config.ReceiveCredentialNotification = credNotifyCheckbox.Checked;
             _config.SpecificMatchingOnly = credMatchingCheckbox.Checked;
             _config.UnlockDatabaseRequest = unlockDatabaseCheckbox.Checked;
