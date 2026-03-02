@@ -22,6 +22,7 @@ Returns entries whose **Title** matches any encrypted name. See [common-fields](
 | `Nonce`       | 16-byte Base64 random                       | Yes      |
 | `Verifier`    | `Nonce` encrypted with key                  | Yes      |
 | `Names`       | Array of encrypted entry titles (non-empty) | Yes      |
+| `Hmac`        | Base64 HMAC-SHA256 of (IV + ciphertext)     | Optional |
 
 **Example**:
 ```json
@@ -70,6 +71,7 @@ See [common-fields](../common-fields#response-envelope) for the common response 
   ],
   "Nonce": "RespNonce==",
   "Verifier": "EncryptedRespNonce==",
+  "Hmac": "Base64Hmac==",
   "Version": "x.y.z",
   "Hash": "dbHashSha1"
 }

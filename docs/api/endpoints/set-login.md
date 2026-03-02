@@ -32,6 +32,7 @@ Confirmation dialog will show the entry name and modified fields.
 | `SubmitUrl`    | Alternate submit host (encrypted)                                              | Optional |
 | `Realm`        | Realm (encrypted)                                                              | Optional |
 | `StringFields` | Dictionary of additional string fields. Both keys and values must be encrypted | Optional |
+| `Hmac`         | Base64 HMAC-SHA256 of (IV + ciphertext)                                        | Optional |
 
 {: .warning }
 **StringFields** keys must be unique per entry.
@@ -49,6 +50,7 @@ This rule applies only to string fields in `StringFields`. Other fields cannot b
   "Id": "client1",
   "Nonce": "ReqNonce==",
   "Verifier": "EncryptedReqNonce==",
+  "Hmac": "Base64Hmac==",
   "Url": "EncryptedPageUrl==",
   "Login": "EncryptedUsername==",
   "Password": "EncryptedPassword==",
@@ -73,6 +75,7 @@ See [common-fields](../common-fields#response-envelope) for the common response 
   "Id": "client1",
   "Nonce": "RespNonce==",
   "Verifier": "EncryptedRespNonce==",
+  "Hmac": "Base64Hmac==",
   "Version": "x.y.z",
   "Hash": "dbHashSha1"
 }

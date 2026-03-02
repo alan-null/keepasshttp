@@ -23,6 +23,37 @@ namespace KeePassHttp
             return System.Convert.FromBase64String(s);
         }
 
+        /// <summary>
+        /// Computes HMAC-SHA256 over (IV + ciphertext) using the AES key.
+        /// </summary>
+        private static byte[] ComputeHmac(byte[] key, byte[] iv, byte[] ciphertext)
+        {
+            using (var hmac = new HMACSHA256(key))
+            {
+                hmac.TransformBlock(iv, 0, iv.Length, null, 0);
+                hmac.TransformFinalBlock(ciphertext, 0, ciphertext.Length);
+                return hmac.Hash;
+            }
+        }
+
+        /// <summary>
+        /// Constant-time comparison to prevent timing side-channel attacks.
+        /// </summary>
+        private static bool ConstantTimeEquals(byte[] a, byte[] b)
+        {
+            if (a.Length != b.Length)
+            {
+                return false;
+            }
+
+            int diff = 0;
+            for (int i = 0; i < a.Length; i++)
+            {
+                diff |= a[i] ^ b[i];
+            }
+            return diff == 0;
+        }
+
         private bool VerifyRequest(BaseRequest r, Aes aes)
         {
             var entry = GetConfigEntry(false);
@@ -44,9 +75,21 @@ namespace KeePassHttp
         {
             var success = false;
             var crypted = Decode64(r.Verifier);
+            var keyBytes = Decode64(key);
 
-            aes.Key = Decode64(key);
+            aes.Key = keyBytes;
             aes.IV = Decode64(r.Nonce);
+
+            // If the request includes an HMAC, verify it first (Encrypt-then-MAC)
+            if (!string.IsNullOrEmpty(r.Hmac))
+            {
+                var expectedHmac = ComputeHmac(keyBytes, aes.IV, crypted);
+                var receivedHmac = Decode64(r.Hmac);
+                if (!ConstantTimeEquals(expectedHmac, receivedHmac))
+                {
+                    return false;
+                }
+            }
 
             using (var dec = aes.CreateDecryptor())
             {
@@ -65,7 +108,18 @@ namespace KeePassHttp
         {
             aes.GenerateIV();
             r.Nonce = Encode64(aes.IV);
-            r.Verifier = CryptoTransform(r.Nonce, false, true, aes, CMode.ENCRYPT);
+
+            var plainBytes = Encoding.UTF8.GetBytes(r.Nonce);
+            byte[] cipherBytes;
+            using (var enc = aes.CreateEncryptor())
+            {
+                cipherBytes = enc.TransformFinalBlock(plainBytes, 0, plainBytes.Length);
+            }
+            r.Verifier = Encode64(cipherBytes);
+
+            // Compute HMAC-SHA256 over (IV + ciphertext) for authenticated encryption
+            var hmacBytes = ComputeHmac(aes.Key, aes.IV, cipherBytes);
+            r.Hmac = Encode64(hmacBytes);
         }
     }
     public class Request

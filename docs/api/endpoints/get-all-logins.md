@@ -15,12 +15,13 @@ Returns every non-expired entry. See [common-fields](../common-fields).
 # Request
 ### Fields:
 
-| Field         | Description / Value        | Required |
-| :------------ | :------------------------- | :------- |
-| `RequestType` | "get-all-logins"           | Yes      |
-| `Id`          | Associated key `Id`        | Yes      |
-| `Nonce`       | 16-byte Base64 random      | Yes      |
-| `Verifier`    | `Nonce` encrypted with key | Yes      |
+| Field         | Description / Value                     | Required |
+| :------------ | :-------------------------------------- | :------- |
+| `RequestType` | "get-all-logins"                        | Yes      |
+| `Id`          | Associated key `Id`                     | Yes      |
+| `Nonce`       | 16-byte Base64 random                   | Yes      |
+| `Verifier`    | `Nonce` encrypted with key              | Yes      |
+| `Hmac`        | Base64 HMAC-SHA256 of (IV + ciphertext) | Optional |
 
 **Example**:
 ```json
@@ -29,6 +30,7 @@ Returns every non-expired entry. See [common-fields](../common-fields).
   "Id": "client1",
   "Nonce": "ReqNonce==",
   "Verifier": "EncryptedReqNonce=="
+  ,"Hmac": "Base64Hmac=="
 }
 ```
 
@@ -56,6 +58,7 @@ See [common-fields](../common-fields#response-envelope) for the common response 
     ],
     "Nonce": "RespNonce==",
     "Verifier": "EncryptedRespNonce==",
+    "Hmac": "Base64Hmac==",
     "Version": "x.y.z",
     "Hash": "dbHashSha1"
 }

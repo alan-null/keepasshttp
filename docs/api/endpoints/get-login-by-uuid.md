@@ -22,6 +22,7 @@ Returns single entry whose **Uuid** matches the provided encrypted UUID. See [co
 | `Nonce`       | 16-byte Base64 random                    | Yes      |
 | `Verifier`    | `Nonce` encrypted with key               | Yes      |
 | `Uuid`        | The unique identifier of a KeePass entry | Yes      |
+| `Hmac`        | Base64 HMAC-SHA256 of (IV + ciphertext)  | Optional |
 
 **Example**:
 ```json
@@ -30,7 +31,8 @@ Returns single entry whose **Uuid** matches the provided encrypted UUID. See [co
   "Id": "client1",
   "Uuid": "EncryptedReqUuid==",
   "Nonce": "ReqNonce==",
-  "Verifier": "EncryptedReqNonce=="
+  "Verifier": "EncryptedReqNonce==",
+  "Hmac": "Base64Hmac=="
 }
 ```
 
@@ -56,6 +58,7 @@ See [common-fields](../common-fields#response-envelope) for the common response 
   ],
   "Nonce": "RespNonce==",
   "Verifier": "EncryptedRespNonce==",
+  "Hmac": "Base64Hmac==",
   "Version": "x.y.z",
   "Hash": "dbHashSha1"
 }

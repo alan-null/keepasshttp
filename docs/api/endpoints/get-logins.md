@@ -16,15 +16,16 @@ Returns matching credentials for a form (optional submit URL / realm). See [comm
 
 ### Fields:
 
-| Field         | Description / Value        | Required |
-| :------------ | :------------------------- | :------- |
-| `RequestType` | "get-logins"               | Yes      |
-| `Id`          | Associated key `Id`        | Yes      |
-| `Nonce`       | 16-byte Base64 random      | Yes      |
-| `Verifier`    | `Nonce` encrypted with key | Yes      |
-| `Url`         | Page/form URL (encrypted)  | Yes      |
-| `SubmitUrl`   | Submission URL (encrypted) | Optional |
-| `Realm`       | Realm string (encrypted)   | Optional |
+| Field         | Description / Value                     | Required |
+| :------------ | :-------------------------------------- | :------- |
+| `RequestType` | "get-logins"                            | Yes      |
+| `Id`          | Associated key `Id`                     | Yes      |
+| `Nonce`       | 16-byte Base64 random                   | Yes      |
+| `Verifier`    | `Nonce` encrypted with key              | Yes      |
+| `Url`         | Page/form URL (encrypted)               | Yes      |
+| `SubmitUrl`   | Submission URL (encrypted)              | Optional |
+| `Realm`       | Realm string (encrypted)                | Optional |
+| `Hmac`        | Base64 HMAC-SHA256 of (IV + ciphertext) | Optional |
 
 **Example**:
 ```json
@@ -64,6 +65,7 @@ See [common-fields](../common-fields#response-envelope) for the common response 
   ],
   "Nonce": "RespNonce==",
   "Verifier": "EncryptedRespNonce==",
+  "Hmac": "Base64Hmac==",
   "Version": "x.y.z",
   "Hash": "dbHashSha1"
 }

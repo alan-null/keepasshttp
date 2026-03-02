@@ -36,6 +36,13 @@ namespace KeePassHttp.Model.Request
         [JsonProperty]
         public string Nonce { get; set; }
 
+        /// <summary>
+        /// HMAC-SHA256 of (IV + Verifier ciphertext) for authenticated encryption.
+        /// Optional for backward compatibility; when present, verified before decryption.
+        /// </summary>
+        [JsonProperty]
+        public string Hmac { get; set; }
+
         internal static BaseRequest Factory(JObject jo, JsonSerializer serializer)
         {
             var type = (string)jo["RequestType"] ?? "";

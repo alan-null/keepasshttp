@@ -39,6 +39,7 @@ Performs a KeePass "Find" using custom search options and returns matching entri
 | `ExcludeExpired`                | Exclude expired entries from results                          | `false`                      | Optional |
 | `RespectEntrySearchingDisabled` | Honor per-group “search entries in this group” option         | `true`                       | Optional |
 | `ComparisonMode`                | String comparison mode (e.g. `InvariantCultureIgnoreCase`)    | `InvariantCultureIgnoreCase` | Optional |
+| `Hmac`                          | Base64 HMAC-SHA256 of (IV + ciphertext)                       | Optional                     |
 
 **Example**:
 ```json
@@ -47,6 +48,7 @@ Performs a KeePass "Find" using custom search options and returns matching entri
   "Id": "client1",
   "Nonce": "ReqNonce==",
   "Verifier": "EncryptedReqNonce==",
+  "Hmac": "Base64Hmac==",
   "SearchString": "EncryptedSearchText==",
   "SearchInTitles": true,
   "SearchInUserNames": true,
@@ -87,6 +89,7 @@ See [common-fields](../common-fields#response-envelope) for the common response 
   ],
   "Nonce": "RespNonce==",
   "Verifier": "EncryptedRespNonce==",
+  "Hmac": "Base64Hmac==",
   "Version": "x.y.z",
   "Hash": "dbHashSha1"
 }

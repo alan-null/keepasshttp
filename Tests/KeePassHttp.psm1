@@ -12,10 +12,10 @@ function New-Aes {
         [Parameter(Mandatory)][string]$Nonce
     )
     $aes = [Security.Cryptography.Aes]::Create()
-    $aes.Mode    = 'CBC'
+    $aes.Mode = 'CBC'
     $aes.Padding = 'PKCS7'
-    $aes.Key     = [Convert]::FromBase64String($Key)
-    $aes.IV      = [Convert]::FromBase64String($Nonce)
+    $aes.Key = [Convert]::FromBase64String($Key)
+    $aes.IV = [Convert]::FromBase64String($Nonce)
     $aes
 }
 
@@ -28,9 +28,9 @@ function New-KphContext {
     )
     [pscustomobject]@{
         PSTypeName = 'KeePassHttp.Context'
-        Key       = $Key
-        Id        = $Id
-        Endpoint  = $Endpoint
+        Key        = $Key
+        Id         = $Id
+        Endpoint   = $Endpoint
     }
 }
 
@@ -44,10 +44,11 @@ function Protect-Field {
     $aes = New-Aes -Key $Context.Key -Nonce $Nonce
     $enc = $aes.CreateEncryptor()
     try {
-        $bytes  = [Text.Encoding]::UTF8.GetBytes($PlainText)
-        $cipherBytes = $enc.TransformFinalBlock($bytes,0,$bytes.Length)
+        $bytes = [Text.Encoding]::UTF8.GetBytes($PlainText)
+        $cipherBytes = $enc.TransformFinalBlock($bytes, 0, $bytes.Length)
         [Convert]::ToBase64String($cipherBytes)
-    } finally {
+    }
+    finally {
         $enc.Dispose(); $aes.Dispose()
     }
 }
@@ -62,9 +63,10 @@ function Unprotect-Field {
     $dec = $aes.CreateDecryptor()
     try {
         $cipherBytes = [Convert]::FromBase64String($Cipher)
-        $plain  = $dec.TransformFinalBlock($cipherBytes,0,$cipherBytes.Length)
+        $plain = $dec.TransformFinalBlock($cipherBytes, 0, $cipherBytes.Length)
         [Text.Encoding]::UTF8.GetString($plain)
-    } finally {
+    }
+    finally {
         $dec.Dispose(); $aes.Dispose()
     }
 }
@@ -110,7 +112,7 @@ function Invoke-GetLogins {
         Url         = Protect-Field -Context $Context -PlainText $Url -Nonce $p.Nonce
     }
     if ($SubmitUrl) { $req.SubmitUrl = Protect-Field -Context $Context -PlainText $SubmitUrl -Nonce $p.Nonce }
-    if ($Realm)     { $req.Realm     = Protect-Field -Context $Context -PlainText $Realm     -Nonce $p.Nonce }
+    if ($Realm) { $req.Realm = Protect-Field -Context $Context -PlainText $Realm     -Nonce $p.Nonce }
     $json = $req | ConvertTo-Json
     Invoke-RestMethod -Uri $Context.Endpoint -Method Post -ContentType "application/json" -Body $json
 }
@@ -226,10 +228,10 @@ function Invoke-GetLoginsCustomSearch {
     $p = New-VerifierPair -Context $Context
 
     $req = @{
-        RequestType = "get-logins-custom-search"
-        Id          = $Context.Id
-        Nonce       = $p.Nonce
-        Verifier    = $p.Verifier
+        RequestType  = "get-logins-custom-search"
+        Id           = $Context.Id
+        Nonce        = $p.Nonce
+        Verifier     = $p.Verifier
         SearchString = Protect-Field -Context $Context -PlainText $SearchString -Nonce $p.Nonce
     }
 
@@ -274,20 +276,21 @@ function Invoke-SetLogin {
         Nonce       = $p.Nonce
         Verifier    = $p.Verifier
     }
-    if ($Name)      { $body.Name        = Protect-Field -Context $Context -PlainText $Name      -Nonce $p.Nonce }
-    if ($Login)     { $body.Login       = Protect-Field -Context $Context -PlainText $Login     -Nonce $p.Nonce }
-    if ($Password)  { $body.Password    = Protect-Field -Context $Context -PlainText $Password  -Nonce $p.Nonce }
-    if ($Url)       { $body.Url         = Protect-Field -Context $Context -PlainText $Url       -Nonce $p.Nonce }
-    if ($Uuid)      { $body.Uuid        = Protect-Field -Context $Context -PlainText $Uuid      -Nonce $p.Nonce }
-    if ($SubmitUrl) { $body.SubmitUrl   = Protect-Field -Context $Context -PlainText $SubmitUrl -Nonce $p.Nonce }
-    if ($Realm)     { $body.Realm       = Protect-Field -Context $Context -PlainText $Realm     -Nonce $p.Nonce }
-    if ($StringFields){
+    if ($Name) { $body.Name = Protect-Field -Context $Context -PlainText $Name      -Nonce $p.Nonce }
+    if ($Login) { $body.Login = Protect-Field -Context $Context -PlainText $Login     -Nonce $p.Nonce }
+    if ($Password) { $body.Password = Protect-Field -Context $Context -PlainText $Password  -Nonce $p.Nonce }
+    if ($Url) { $body.Url = Protect-Field -Context $Context -PlainText $Url       -Nonce $p.Nonce }
+    if ($Uuid) { $body.Uuid = Protect-Field -Context $Context -PlainText $Uuid      -Nonce $p.Nonce }
+    if ($SubmitUrl) { $body.SubmitUrl = Protect-Field -Context $Context -PlainText $SubmitUrl -Nonce $p.Nonce }
+    if ($Realm) { $body.Realm = Protect-Field -Context $Context -PlainText $Realm     -Nonce $p.Nonce }
+    if ($StringFields) {
         $protectedStringFields = @{}
         foreach ($key in $StringFields.Keys) {
-            $protectedKey   = Protect-Field -Context $Context -PlainText $key                   -Nonce $p.Nonce
+            $protectedKey = Protect-Field -Context $Context -PlainText $key                   -Nonce $p.Nonce
             if ($null -eq $StringFields[$key]) {
                 $protectedStringFields[$protectedKey] = $null
-            }else {
+            }
+            else {
                 $protectedValue = Protect-Field -Context $Context -PlainText $StringFields[$key]    -Nonce $p.Nonce
                 $protectedStringFields[$protectedKey] = $protectedValue
             }
@@ -298,7 +301,32 @@ function Invoke-SetLogin {
     Invoke-RestMethod -Uri $Context.Endpoint -Method Post -ContentType "application/json" -Body $json
 }
 
+function New-HMAC {
+    param(
+        [Parameter(Mandatory)][string]$Key,
+        [Parameter(Mandatory)][string]$Nonce,
+        [Parameter(Mandatory)][string]$Verifier
+    )
+    $keyBytes = [Convert]::FromBase64String($Key)
+    $iv = [Convert]::FromBase64String($Nonce)
+    $cipher = [Convert]::FromBase64String($Verifier)
+
+    $data = New-Object byte[] ($iv.Length + $cipher.Length)
+    [Array]::Copy($iv, 0, $data, 0, $iv.Length)
+    [Array]::Copy($cipher, 0, $data, $iv.Length, $cipher.Length)
+
+    $hmac = New-Object System.Security.Cryptography.HMACSHA256
+    try {
+        $hmac.Key = $keyBytes
+        $hash = $hmac.ComputeHash($data)
+        [Convert]::ToBase64String($hash)
+    }
+    finally {
+        $hmac.Dispose()
+    }
+}
+
 Export-ModuleMember -Function `
     New-KphContext, New-Nonce, New-VerifierPair, `
     Invoke-TestAssociate, Invoke-GetLogins, Invoke-GetLoginsByName, Invoke-GetLoginByUuid, Invoke-GetLoginsCount, Invoke-GetAllLogins, Invoke-GetLoginsCustomSearch, Invoke-GeneratePassword, Invoke-SetLogin, `
-    Protect-Field, Unprotect-Field
+    Protect-Field, Unprotect-Field, New-HMAC

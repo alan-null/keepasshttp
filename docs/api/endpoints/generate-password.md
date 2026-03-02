@@ -15,12 +15,13 @@ Generates a password (not persisted). See [common-fields](../common-fields).
 # Request
 ### Fields:
 
-| Field         | Description / Value        | Required |
-| :------------ | :------------------------- | :------- |
-| `RequestType` | "generate-password"        | Yes      |
-| `Id`          | Associated key `Id`        | Yes      |
-| `Nonce`       | 16-byte Base64 random      | Yes      |
-| `Verifier`    | `Nonce` encrypted with key | Yes      |
+| Field         | Description / Value                     | Required |
+| :------------ | :-------------------------------------- | :------- |
+| `RequestType` | "generate-password"                     | Yes      |
+| `Id`          | Associated key `Id`                     | Yes      |
+| `Nonce`       | 16-byte Base64 random                   | Yes      |
+| `Verifier`    | `Nonce` encrypted with key              | Yes      |
+| `Hmac`        | Base64 HMAC-SHA256 of (IV + ciphertext) | Optional |
 
 **Example**:
 ```json
@@ -28,7 +29,8 @@ Generates a password (not persisted). See [common-fields](../common-fields).
   "RequestType": "generate-password",
   "Id": "client1",
   "Nonce": "ReqNonce==",
-  "Verifier": "EncryptedReqNonce=="
+  "Verifier": "EncryptedReqNonce==",
+  "Hmac": "Base64Hmac=="
 }
 ```
 
@@ -53,6 +55,7 @@ See [common-fields](../common-fields#response-envelope) for the common response 
   ],
   "Nonce": "RespNonce==",
   "Verifier": "EncryptedRespNonce==",
+  "Hmac": "Base64Hmac==",
   "Version": "x.y.z",
   "Hash": "dbHashSha1"
 }

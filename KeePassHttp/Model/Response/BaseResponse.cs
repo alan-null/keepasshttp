@@ -35,5 +35,11 @@
         /// Same purpose as Request.Verifier, but a new value
         /// </summary>
         public string Verifier;
+
+        /// <summary>
+        /// HMAC-SHA256 of (IV + Verifier ciphertext) for authenticated encryption.
+        /// Always included in responses for clients that support verification.
+        /// </summary>
+        public string Hmac;
     }
 }

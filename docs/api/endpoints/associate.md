@@ -26,6 +26,7 @@ See [common-fields](../common-fields).
 | `Key`         | Base64 AES key (32 bytes recommended)              | Yes      |
 | `Nonce`       | 16-byte Base64 random (IV + challenge)             | Yes      |
 | `Verifier`    | `Nonce` encrypted with `Key` (AES-CBC, IV=`Nonce`) | Yes      |
+| `Hmac`        | Base64 HMAC-SHA256 of (IV + ciphertext)            | Optional |
 
 **Example**:
 ```json
@@ -49,8 +50,9 @@ See [common-fields](../common-fields#response-envelope) for the common response 
   "Id": "client1",
   "Version": "2.0.0.0",
   "Hash": "000c8edde13701752405676e684b7570c13a9291",
-  "Nonce": "g4fYGDSufIbtEUGsuHvFcA==",
-  "Verifier": "ii652Bj5kRBVkxDtmr3T8rIm72r7dj4zo3IiVflvPNk="
+  "Nonce": "ReqNonce==",
+  "Verifier": "EncryptedReqNonce==",
+  "Hmac": "Base64Hmac=="
 }
 ```
 

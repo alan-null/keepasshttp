@@ -16,12 +16,13 @@ Verifies an existing association. See [common-fields](../common-fields).
 
 ### Fields:
 
-| Field         | Description / Value        | Required |
-| :------------ | :------------------------- | :------- |
-| `RequestType` | "test-associate"           | Yes      |
-| `Id`          | Associated key `Id`        | Yes      |
-| `Nonce`       | 16-byte Base64 random      | Yes      |
-| `Verifier`    | `Nonce` encrypted with key | Yes      |
+| Field         | Description / Value                     | Required |
+| :------------ | :-------------------------------------- | :------- |
+| `RequestType` | "test-associate"                        | Yes      |
+| `Id`          | Associated key `Id`                     | Yes      |
+| `Nonce`       | 16-byte Base64 random                   | Yes      |
+| `Verifier`    | `Nonce` encrypted with key              | Yes      |
+| `Hmac`        | Base64 HMAC-SHA256 of (IV + ciphertext) | Optional |
 
 **Example**:
 ```json
@@ -46,7 +47,8 @@ See [common-fields](../common-fields#response-envelope) for the common response 
   "Version": "x.y.z",
   "Hash": "dbHashSha1",
   "Nonce": "RespNonce==",
-  "Verifier": "EncryptedRespNonce=="
+  "Verifier": "EncryptedRespNonce==",
+  "Hmac": "Base64Hmac=="
 }
 ```
 

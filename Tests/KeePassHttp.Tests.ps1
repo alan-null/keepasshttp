@@ -40,7 +40,7 @@ Describe "KeePassHttp protocol" {
         It "returns expected properties (RequestType, Success, Id, Version, Hash, Nonce, Verifier)" {
             $r = Invoke-TestAssociate -Context $Context
             $props = $r.PSObject.Properties.Name
-            $props.Count | Should -Be 7
+            $props.Count | Should -Be 8
             $props | Should -Contain "RequestType"
             $props | Should -Contain "Success"
             $props | Should -Contain "Id"
@@ -48,7 +48,45 @@ Describe "KeePassHttp protocol" {
             $props | Should -Contain "Hash"
             $props | Should -Contain "Nonce"
             $props | Should -Contain "Verifier"
+            $props | Should -Contain "Hmac"
         }
+
+            It "accepts request when Hmac is present and valid" {
+                $p = New-VerifierPair -Context $Context
+                $correctHmac = New-HMAC -Key $Context.Key -Nonce $p.Nonce -Verifier $p.Verifier
+                $body = @{
+                    RequestType = "test-associate"
+                    Id          = $Context.Id
+                    Nonce       = $p.Nonce
+                    Verifier    = $p.Verifier
+                    Hmac        = $correctHmac
+                } | ConvertTo-Json
+
+                $r = Invoke-RestMethod -Uri $Context.Endpoint -Method Post -ContentType "application/json" -Body $body
+                $r.Success | Should -BeTrue
+            }
+
+            It "rejects request when Hmac is present but invalid" {
+                $p = New-VerifierPair -Context $Context
+                $correctHmac = New-HMAC -Key $Context.Key -Nonce $p.Nonce -Verifier $p.Verifier
+                # tamper last character to make it invalid
+                $last = $correctHmac[-1]
+                $alt = if ($last -ne 'A') { 'A' } else { 'B' }
+                $invalidHmac = $correctHmac.Substring(0,$correctHmac.Length-1) + $alt
+
+                $body = @{
+                    RequestType = "test-associate"
+                    Id          = $Context.Id
+                    Nonce       = $p.Nonce
+                    Verifier    = $p.Verifier
+                    Hmac        = $invalidHmac
+                } | ConvertTo-Json
+
+                $response = Invoke-WebRequest -Uri $Context.Endpoint -Method Post -ContentType "application/json" -Body $body -SkipHttpErrorCheck
+                $json = $response.Content | ConvertFrom-Json
+                $json.Success | Should -BeFalse
+                $json.Error | Should -Match "Couldn't verify request"
+            }
 
         It "fails test-associate with missing Id" {
             $p = New-VerifierPair -Context $Context
