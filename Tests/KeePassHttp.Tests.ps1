@@ -3,7 +3,7 @@
 . "$PSScriptRoot\Start-KeePassTestDb.ps1"
 
 # wait for KeePassHttp endpoint to respond before starting tests
-$Endpoint = "http://localhost:19455"
+$Endpoint = "https://localhost:19456"
 $maxWaitSeconds = 30
 $sw = [Diagnostics.Stopwatch]::StartNew()
 while ($sw.Elapsed.TotalSeconds -lt $maxWaitSeconds) {
@@ -26,7 +26,7 @@ Describe "KeePassHttp protocol" {
     BeforeAll {
         $Id = "Test Key"
         $Key = "Lgh8xMEkV2j10bG7O42GjCibsUEpM80T7Db+skKGiNc="
-        $Endpoint = "http://localhost:19455"
+        $Endpoint = "https://localhost:19456"
         $KeePassHttpVersion = & "$PSScriptRoot\..\scripts\Get-LatestVersion.ps1" (Join-Path $PSScriptRoot '..\latest-version.txt') | Where-Object { $_.Name -eq 'KeePassHttp' } | Select-Object -ExpandProperty Version
         $Context = New-KphContext -Key $Key -Id $Id -Endpoint $Endpoint
     }
@@ -1014,7 +1014,7 @@ Describe "KeePassHttp protocol" {
         }
 
         It "creates listener on custom host/port" {
-            Restart-KeePassTest -Environment @{ "KPH_ListenerHostHttp" = $hostName ; "KPH_ListenerPortHttp" = $portHttp }
+            Restart-KeePassTest -Environment @{ "KPH_ListenerHostHttp" = $hostName ; "KPH_ListenerPortHttp" = $portHttp ; "KPH_ActivateHttpListener" = "true"; "KPH_ActivateHttpsListener" = "false" }
             $customEndpoint = "http://$hostName`:$portHttp"
             $customCtx = New-KphContext -Key $Key -Id $Id -Endpoint $customEndpoint
 

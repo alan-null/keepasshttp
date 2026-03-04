@@ -123,7 +123,7 @@ namespace KeePassHttp.Configuration
 
         public bool ActivateHttpListener
         {
-            get { bool v; return TryGetEnvBool("ActivateHttpsListener", out v) ? v : _activateHttpListener; }
+            get { bool v; return TryGetEnvBool("ActivateHttpListener", out v) ? v : _activateHttpListener; }
             set { _activateHttpListener = value; }
         }
 
