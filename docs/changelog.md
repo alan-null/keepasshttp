@@ -8,11 +8,16 @@ toc_title: "Versions:"
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [v2.3.0.0]
+## [v2.3.1.0]
 {: .d-inline-block }
 Latest
 {: .label .label-green }
 
+### Fixed
+- Credentials not found for URL containing the port ([#40])
+- Unable to set `ActivateHttpListener` via EV ([#41])
+
+## [v2.3.0.0]
 
 ### Added
 
@@ -91,7 +96,8 @@ Latest
 - Legacy release of **KeePassHttp** by [Perry Nguyen].
 
 <!-- versions -->
-[unreleased]: https://github.com/alan-null/keepasshttp/compare/v2.3.0.0...HEAD
+[unreleased]: https://github.com/alan-null/keepasshttp/compare/v2.3.1.0...HEAD
+[v2.3.1.0]: https://github.com/alan-null/keepasshttp/releases/tag/v2.3.1.0
 [v2.3.0.0]: https://github.com/alan-null/keepasshttp/releases/tag/v2.3.0.0
 [v2.2.0.0]: https://github.com/alan-null/keepasshttp/releases/tag/v2.2.0.0
 [v2.1.0.0]: https://github.com/alan-null/keepasshttp/releases/tag/v2.1.0.0
@@ -99,6 +105,8 @@ Latest
 [v1.8.4.2]: https://github.com/alan-null/keepasshttp/releases/tag/v1.8.4.2
 
 <!-- issues -->
+[#41]: https://github.com/alan-null/keepasshttp/issues/41
+[#40]: https://github.com/alan-null/keepasshttp/issues/40
 [#39]: https://github.com/alan-null/keepasshttp/issues/39
 [#38]: https://github.com/alan-null/keepasshttp/issues/38
 [#37]: https://github.com/alan-null/keepasshttp/issues/37
