@@ -25,7 +25,7 @@ namespace KeePassHttp
 {
     public sealed partial class KeePassHttpExt : Plugin
     {
-        private string GetHost(string uri)
+        private static string GetHost(string uri)
         {
             var host = uri;
             try
@@ -305,7 +305,7 @@ namespace KeePassHttp
 
             if (IsLikelyUri(input))
             {
-                var host = GetStaticHost(input);
+                var host = GetHost(input);
                 if (!string.IsNullOrEmpty(host) && formHost.EndsWith(host))
                 {
                     return true;
@@ -313,16 +313,6 @@ namespace KeePassHttp
             }
 
             return formHost.Contains(input);
-        }
-
-        private static string GetStaticHost(string uri)
-        {
-            try
-            {
-                var u = new Uri(uri);
-                return u.Host;
-            }
-            catch { return ""; }
         }
 
         private BaseResponse GetLoginsCountHandler(BaseRequest br, Aes aes)

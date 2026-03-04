@@ -193,6 +193,17 @@ Describe "KeePassHttp protocol" {
             (Unprotect-Field -Context $Context -Cipher $r.Entries[0].Login -Nonce $r.Nonce) | Should -Be "user2"
         }
 
+        It "matches entry by IP address and port" {
+            $r = Invoke-GetLogins -Context $Context -Url "https://172.29.99.249:9443/"
+            $r.Entries.Count | Should -Be 1
+            (Unprotect-Field -Context $Context -Cipher $r.Entries[0].Login -Nonce $r.Nonce) | Should -Be "issue-40"
+        }
+
+        It "returns no entries for correct IP but missing port" {
+            $r = Invoke-GetLogins -Context $Context -Url "https://172.29.99.249"
+            $r.Entries.Count | Should -Be 0
+        }
+
         It "returns expected entry properties (Login, Uuid, Name, Password, Group)" {
             $r = Invoke-GetLogins -Context $Context -Url "http://www.sort.example/"
             $props = $r.Entries[0].PSObject.Properties.Name
@@ -288,7 +299,7 @@ Describe "KeePassHttp protocol" {
     Context "GET_ALL_LOGINS" {
         It "get-all-logins returns all expected entries (includes google-user)" {
             $all = Invoke-GetAllLogins -Context $Context
-            $all.Entries.Count | Should -BeExactly 16
+            $all.Entries.Count | Should -BeExactly 17
             $found = $false
             foreach ($e in $all.Entries) {
                 $name = Unprotect-Field -Context $Context -Cipher $e.Name -Nonce $all.Nonce
