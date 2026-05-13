@@ -9,7 +9,7 @@ has_toc: false
 
 ## Windows installation using Chocolatey
 
- 1. Install using [Chocolatey](https://chocolatey.org/) with `choco install keepass-keepasshttp`
+ 1. Install using [Chocolatey](https://chocolatey.org/) with [`choco install keepass-keepasshttp`](https://community.chocolatey.org/packages/keepass-keepasshttp)
  2. Restart KeePass if it is currently running to load the plugin
 
 ## Non-Windows / Manual Windows installation
